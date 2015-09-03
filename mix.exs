@@ -3,7 +3,7 @@ defmodule Briefly.Mixfile do
 
   def project do
     [app: :briefly,
-     version: "0.1.0",
+     version: "0.1.1",
      elixir: "~> 1.0",
      source_url: "https://github.com/CargoSense/briefly",
      build_embedded: Mix.env == :prod,
