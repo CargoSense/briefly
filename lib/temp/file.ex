@@ -62,14 +62,13 @@ defmodule Temp.File do
 
   ## Callbacks
 
-  @temp_env_vars ~w(TMPDIR TMP TEMP)s
   @max_attempts 10
 
   @doc false
   def init(:ok) do
-    tmp = Enum.find_value @temp_env_vars, "/tmp", &System.get_env/1
+    tmp = Temp.Config.directory
     cwd = Path.join(File.cwd!, "tmp")
-    ets = :ets.new(:temp_files, [:private])
+    ets = :ets.new(:briefly, [:private])
     {:ok, {[tmp, cwd], ets}}
   end
 
@@ -122,7 +121,7 @@ defmodule Temp.File do
 
   defp ensure_tmp_dir(tmps) do
     {mega, _, _} = :os.timestamp
-    subdir = "/plug-" <> i(mega)
+    subdir = "/briefly-" <> i(mega)
     Enum.find_value(tmps, &write_tmp_dir(&1 <> subdir))
   end
 
