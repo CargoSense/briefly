@@ -11,6 +11,26 @@ Simple, robust temporary file support for Elixir.
 * File creation is based on [Plug.Upload](http://hexdocs.pm/plug/Plug.Upload.html)'s robust retry logic
 * Configurable temporary directory setting with support for fallbacks
 
+## Installation
+
+Add as a dependency to your `mix.exs`:
+
+```elixir
+def deps do
+  [
+    briefly: "~> 0.1"
+  ]
+end
+```
+
+Install it with `mix deps.get` and don't forget to add it to your applications list:
+
+```elixir
+def application do
+  [applications: [:briefly]]
+end
+```
+
 ## Example
 
 ```elixir
