@@ -6,10 +6,10 @@ Simple, robust temporary file support for Elixir.
 
 ## Highlighted Features
 
-* Create temporary files using a prefix
+* Create temporary files with prefix and extname options
 * Files are removed after the process that requested the file dies
 * File creation is based on [Plug.Upload](http://hexdocs.pm/plug/Plug.Upload.html)'s robust retry logic
-* Configurable temporary directory setting with support for fallbacks
+* Configurable; built-in support for system environment variables and fallbacks
 
 ## Installation
 
