@@ -1,17 +1,11 @@
 defmodule Briefly.Config do
   @moduledoc false
 
-  def directory do
-    get(:directory)
-  end
+  def directory, do: get(:directory)
 
-  def default_prefix do
-    get(:default_prefix)
-  end
+  def default_prefix, do: get(:default_prefix)
 
-  def default_extname do
-    get(:default_extname)
-  end
+  def default_extname, do: get(:default_extname)
 
   defp get(key) do
     Application.get_env(:briefly, key, [])
