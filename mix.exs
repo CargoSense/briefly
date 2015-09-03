@@ -37,7 +37,7 @@ defmodule Briefly.Mixfile do
 
   defp package do
     [description: "Temporary file support",
-     files: ["lib", "config", "mix.exs", "README*"],
+     files: ["lib", "config", "mix.exs", "README*", "LICENSE"],
      contributors: ["Bruce Williams"],
      licenses: ["MIT"],
      links: %{github: "https://github.com/CargoSense/briefly"}]
