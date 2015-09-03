@@ -11,12 +11,21 @@ Temporary files for Elixir.
 * File creation is based on [Plug.Upload](http://hexdocs.pm/plug/Plug.Upload.html)'s robust retry logic
 * Configurable temporary directory setting with support for fallbacks
 
+## Example
+
+```elixir
+{:ok, path} = Briefly.create("myprefix")
+File.write!(path, "Some Text")
+content = File.read!(path)
+# When this process exits, the file at `path` is removed
+```
+
 ## Configuration
 
 The default, out-of-the-box settings for Briefly are equivalent to the
 following Mix config:
 
-```
+```elixir
 config :briefly,
   directory: [{:system, "TMPDIR"}, {:system, "TMP"}, {:system, "TEMP"}, "/tmp"]
   ```
