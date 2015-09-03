@@ -1,13 +1,16 @@
 defmodule Test.Briefly.File do
   use ExUnit.Case, async: true
 
+  @fixture "content"
+
   test "removes the random file on process death" do
     parent = self()
 
     {pid, ref} = spawn_monitor fn ->
       {:ok, path} = Briefly.create("sample")
       send parent, {:path, path}
-      File.open!(path)
+      File.write!(path, @fixture)
+      assert File.read!(path) == @fixture
     end
 
     path =
