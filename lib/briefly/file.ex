@@ -1,16 +1,16 @@
-defmodule Temp.File do
+defmodule Briefly.File do
   @moduledoc """
   A server (a `GenServer` specifically) that manages temporary files.
 
   Files are located in a temporary directory and removed from that
   directory after the process that requested the file dies.
 
-  Files are represented with `Temp.File` struct that contains one field:
+  Files are represented with `Briefly.File` struct that contains one field:
 
   * `:path` - the path to the file on the filesystem
 
-  **Note**: The `:temp` application has to be started in order to use the
-  `Temp.File` module.
+  **Note**: The `:briefly` application has to be started in order to use the
+  `Briefly.File` module.
   """
 
   defstruct [:path]
@@ -27,7 +27,7 @@ defmodule Temp.File do
         {:too_many_attempts, binary, pos_integer} |
         {:no_tmp, [binary]}
   def touch(prefix) do
-    GenServer.call(temp_server, {:file, prefix})
+    GenServer.call(briefly_server, {:file, prefix})
   end
 
   @doc """
@@ -46,9 +46,9 @@ defmodule Temp.File do
     end
   end
 
-  defp temp_server do
+  defp briefly_server do
     Process.whereis(__MODULE__) ||
-      raise "could not find process Temp.File. Have you started the :temp application?"
+      raise "could not find process Briefly.File. Have you started the :briefly application?"
   end
 
   use GenServer
@@ -66,7 +66,7 @@ defmodule Temp.File do
 
   @doc false
   def init(:ok) do
-    tmp = Temp.Config.directory
+    tmp = Briefly.Config.directory
     cwd = Path.join(File.cwd!, "tmp")
     ets = :ets.new(:briefly, [:private])
     {:ok, {[tmp, cwd], ets}}

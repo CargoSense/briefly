@@ -1,10 +1,10 @@
-defmodule Temp do
+defmodule Briefly do
 
   use Application
 
   @doc false
   def start(_type, _args) do
-    Temp.Supervisor.start_link()
+    Briefly.Supervisor.start_link()
   end
 
 end

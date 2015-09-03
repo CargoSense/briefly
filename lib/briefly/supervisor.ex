@@ -1,4 +1,4 @@
-defmodule Temp.Supervisor do
+defmodule Briefly.Supervisor do
   @moduledoc false
 
   def start_link() do
@@ -9,7 +9,7 @@ defmodule Temp.Supervisor do
     import Supervisor.Spec
 
     children = [
-      worker(Temp.File, [])
+      worker(Briefly.File, [])
     ]
     supervise(children, strategy: :one_for_one)
   end

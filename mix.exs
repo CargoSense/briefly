@@ -1,8 +1,8 @@
-defmodule Temp.Mixfile do
+defmodule Briefly.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :temp,
+    [app: :briefly,
      version: "0.0.1",
      elixir: "~> 1.0",
      build_embedded: Mix.env == :prod,
@@ -15,7 +15,7 @@ defmodule Temp.Mixfile do
   # Type `mix help compile.app` for more information
   def application do
     [applications: [:logger],
-     mod: {Temp, []}]
+     mod: {Briefly, []}]
   end
 
   # Dependencies can be Hex packages:
