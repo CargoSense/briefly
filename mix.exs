@@ -3,7 +3,7 @@ defmodule Briefly.Mixfile do
 
   def project do
     [app: :briefly,
-     version: "0.1.1",
+     version: "0.2.0",
      elixir: "~> 1.0",
      source_url: "https://github.com/CargoSense/briefly",
      build_embedded: Mix.env == :prod,
@@ -17,7 +17,8 @@ defmodule Briefly.Mixfile do
   # Type `mix help compile.app` for more information
   def application do
     [applications: [:logger],
-     mod: {Briefly, []}]
+     mod: {Briefly, []},
+     env: default_env]
   end
 
   # Dependencies can be Hex packages:
@@ -34,12 +35,18 @@ defmodule Briefly.Mixfile do
      {:ex_doc, "~> 0.8", only: :dev}]
   end
 
-  def package do
+  defp package do
     [description: "Temporary file support",
      files: ["lib", "config", "mix.exs", "README*"],
      contributors: ["Bruce Williams"],
      licenses: ["MIT"],
      links: %{github: "https://github.com/CargoSense/briefly"}]
+  end
+
+  defp default_env do
+    [directory: [{:system, "TMPDIR"}, {:system, "TMP"}, {:system, "TEMP"}, "/tmp"],
+     default_prefix: "briefly",
+     default_extname: ""]
   end
 
 end

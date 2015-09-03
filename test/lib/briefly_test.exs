@@ -3,12 +3,13 @@ defmodule Test.Briefly do
 
   @prefix "temp"
   @fixture "content"
+  @extname ".tst"
 
   test "removes the random file on process death" do
     parent = self()
 
     {pid, ref} = spawn_monitor fn ->
-      {:ok, path} = Briefly.create(@prefix)
+      {:ok, path} = Briefly.create
       send parent, {:path, path}
       File.write!(path, @fixture)
       assert File.read!(path) == @fixture
@@ -23,8 +24,23 @@ defmodule Test.Briefly do
 
     receive do
       {:DOWN, ^ref, :process, ^pid, :normal} ->
-        {:ok, _} = Briefly.create(@prefix)
+        {:ok, _} = Briefly.create
         refute File.exists?(path)
     end
   end
+
+  test "uses the prefix" do
+    {_pid, _ref} = spawn_monitor fn ->
+      {:ok, path} = Briefly.create(prefix: @prefix)
+      assert Path.basename(path) |> String.starts_with?(@prefix <> "-")
+    end
+  end
+
+  test "uses the extname" do
+    {_pid, _ref} = spawn_monitor fn ->
+      {:ok, path} = Briefly.create(extname: @extname)
+      assert Path.extname(path) == @extname
+    end
+  end
+
 end

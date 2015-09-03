@@ -18,7 +18,7 @@ Add as a dependency to your `mix.exs`:
 ```elixir
 def deps do
   [
-    briefly: "~> 0.1"
+    briefly: "~> 0.2"
   ]
 end
 ```
@@ -34,11 +34,14 @@ end
 ## Example
 
 ```elixir
-{:ok, path} = Briefly.create("myprefix")
+{:ok, path} = Briefly.create
 File.write!(path, "Some Text")
 content = File.read!(path)
 # When this process exits, the file at `path` is removed
 ```
+
+See [the documentation](http://hexdocs.pm/briefly/Briefly.html#create/1) to see
+the options that available to `Briefly.create/1` and `Briefly.create!/1`.
 
 ## Configuration
 
@@ -47,14 +50,18 @@ following Mix config:
 
 ```elixir
 config :briefly,
-  directory: [{:system, "TMPDIR"}, {:system, "TMP"}, {:system, "TEMP"}, "/tmp"]
+  directory: [{:system, "TMPDIR"}, {:system, "TMP"}, {:system, "TEMP"}, "/tmp"],
+  default_prefix: "briefly",
+  default_extname: ""
   ```
 
 `directory` here declares an ordered list of possible directory definitions that Briefly will check in order.
 
 The `{:system, env_var}` tuples point to system environment variables to be checked. If none of these are defined, Briefly will use the final entry: `/tmp`.
 
-You can override the `directory` setting with your own candidates in your application Mix config.
+You can override the settings with your own candidates in your application Mix
+config (and pass `prefix` and `extname` to `Briefly.create` to override
+`default_prefix` and `default_extname` on a case-by-case basis).
 
 ## License
 
