@@ -23,17 +23,13 @@ defmodule Briefly.File do
     {:ok, {[tmp, cwd], ets}}
   end
 
-  def handle_call({:file, prefix}, {pid, _ref}, {tmps, ets} = state) do
+  def handle_call({:file, opts}, {pid, _ref}, {tmps, ets} = state) do
     case find_tmp_dir(pid, tmps, ets) do
       {:ok, tmp, paths} ->
-        {:reply, open(prefix, tmp, 0, pid, ets, paths), state}
+        {:reply, open(opts, tmp, 0, pid, ets, paths), state}
       {:no_tmp, _} = error ->
         {:reply, error, state}
     end
-  end
-
-  def handle_call(msg, from, state) do
-    super(msg, from, state)
   end
 
   def handle_info({:DOWN, _ref, :process, pid, _reason}, {_, ets} = state) do
@@ -81,15 +77,15 @@ defmodule Briefly.File do
     end
   end
 
-  defp open(prefix, tmp, attempts, pid, ets, paths) when attempts < @max_attempts do
-    path = path(prefix, tmp)
+  defp open(opts, tmp, attempts, pid, ets, paths) when attempts < @max_attempts do
+    path = path(opts, tmp)
 
     case :file.write_file(path, "", [:write, :raw, :exclusive, :binary]) do
       :ok ->
         :ets.update_element(ets, pid, {3, [path|paths]})
         {:ok, path}
       {:error, reason} when reason in [:eexist, :eaccess] ->
-        open(prefix, tmp, attempts + 1, pid, ets, paths)
+        open(opts, tmp, attempts + 1, pid, ets, paths)
     end
   end
 
@@ -100,10 +96,20 @@ defmodule Briefly.File do
   @compile {:inline, i: 1}
   defp i(integer), do: Integer.to_string(integer)
 
-  defp path(prefix, tmp) do
+  defp path(opts, tmp) do
     {_mega, sec, micro} = :os.timestamp
+    options = opts |> Enum.into(%{})
     scheduler_id = :erlang.system_info(:scheduler_id)
-    tmp <> "/" <> prefix <> "-" <> i(sec) <> "-" <> i(micro) <> "-" <> i(scheduler_id)
+    IO.iodata_to_binary([tmp, "/",
+                         prefix(options),
+                         "-", i(sec), "-", i(micro), "-", i(scheduler_id),
+                         extname(options)])
   end
+
+  defp prefix(%{prefix: value}), do: value
+  defp prefix(_), do: Briefly.Config.default_prefix
+
+  defp extname(%{extname: value}), do: value
+  defp extname(_), do: Briefly.Config.default_extname
 
 end

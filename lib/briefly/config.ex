@@ -1,20 +1,16 @@
 defmodule Briefly.Config do
   @moduledoc false
 
-  @default_directory [{:system, "TMPDIR"}, {:system, "TMP"}, {:system, "TEMP"}, "/tmp"]
+  def directory, do: get(:directory)
 
-  def directory do
-    get(:directory)
-    |> List.wrap
-    |> Enum.find_value(&runtime_value/1)
-  end
+  def default_prefix, do: get(:default_prefix)
+
+  def default_extname, do: get(:default_extname)
 
   defp get(key) do
-    Application.get_env(:briefly, key, Keyword.get(defaults, key))
-  end
-
-  defp defaults do
-    [{:directory, @default_directory}]
+    Application.get_env(:briefly, key, [])
+    |> List.wrap
+    |> Enum.find_value(&runtime_value/1)
   end
 
   defp runtime_value({:system, env_key}) do
