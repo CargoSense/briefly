@@ -2,7 +2,7 @@ Briefly
 =======
 [![Build Status](https://travis-ci.org/CargoSense/briefly.svg?branch=master)](https://travis-ci.org/CargoSense/briefly)
 
-Temporary files for Elixir.
+Simple, robust temporary file support for Elixir.
 
 ## Highlighted Features
 
