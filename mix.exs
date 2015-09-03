@@ -5,6 +5,8 @@ defmodule Briefly.Mixfile do
     [app: :briefly,
      version: "0.0.1",
      elixir: "~> 1.0",
+     source_url: "https://github.com/CargoSense/briefly",
+     homepage_url: "https://github.com/CargoSense/briefly",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps]
@@ -28,6 +30,16 @@ defmodule Briefly.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    []
+    [{:earmark, "~> 0.1", only: :dev},
+     {:ex_doc, "~> 0.8", only: :dev}]
   end
+
+  def package do
+    [description: "Temporary file support",
+     files: ["lib", "config", "mix.exs", "README*"],
+     contributors: ["Bruce Williams"],
+     licenses: ["MIT"],
+     links: %{github: "https://github.com/CargoSense/briefly"}]
+  end
+
 end

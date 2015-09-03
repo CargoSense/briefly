@@ -1,4 +1,5 @@
 defmodule Briefly.Config do
+  @moduledoc false
 
   @default_directory [{:system, "TMPDIR"}, {:system, "TMP"}, {:system, "TEMP"}, "/tmp"]
 

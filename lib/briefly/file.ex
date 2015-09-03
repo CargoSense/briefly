@@ -1,61 +1,13 @@
 defmodule Briefly.File do
-  @moduledoc """
-  A server (a `GenServer` specifically) that manages temporary files.
+  @moduledoc false
 
-  Files are located in a temporary directory and removed from that
-  directory after the process that requested the file dies.
-
-  Files are represented with `Briefly.File` struct that contains one field:
-
-  * `:path` - the path to the file on the filesystem
-
-  **Note**: The `:briefly` application has to be started in order to use the
-  `Briefly.File` module.
-  """
-
-  defstruct [:path]
-  @type t :: %__MODULE__{
-    path: Path.t
-  }
-
-  @doc """
-  Requests a temporary file to be created in the temporary directory
-  with the given prefix.
-  """
-  @spec touch(binary) ::
-        {:ok, binary} |
-        {:too_many_attempts, binary, pos_integer} |
-        {:no_tmp, [binary]}
-  def touch(prefix) do
-    GenServer.call(briefly_server, {:file, prefix})
-  end
-
-  @doc """
-  Requests a temporary file to be created in the temporary directory
-  with the given prefix. Raises on failure.
-  """
-  @spec touch!(binary) :: binary | no_return
-  def touch!(prefix) do
-    case touch(prefix) do
-      {:ok, path} ->
-        path
-      {:too_many_attempts, tmp, attempts} ->
-        raise "tried #{attempts} times to create a temporary file at #{tmp} but failed. What gives?"
-      {:no_tmp, _tmps} ->
-        raise "could not create a tmp directory to store temporary files. Set TMPDIR, TMP, or TEMP to a directory with write permission"
-    end
-  end
-
-  defp briefly_server do
+  def server do
     Process.whereis(__MODULE__) ||
       raise "could not find process Briefly.File. Have you started the :briefly application?"
   end
 
   use GenServer
 
-  @doc """
-  Starts the temporary file handling server.
-  """
   def start_link() do
     GenServer.start_link(__MODULE__, :ok, [name: __MODULE__])
   end
@@ -64,7 +16,6 @@ defmodule Briefly.File do
 
   @max_attempts 10
 
-  @doc false
   def init(:ok) do
     tmp = Briefly.Config.directory
     cwd = Path.join(File.cwd!, "tmp")
@@ -72,7 +23,6 @@ defmodule Briefly.File do
     {:ok, {[tmp, cwd], ets}}
   end
 
-  @doc false
   def handle_call({:file, prefix}, {pid, _ref}, {tmps, ets} = state) do
     case find_tmp_dir(pid, tmps, ets) do
       {:ok, tmp, paths} ->
@@ -86,7 +36,6 @@ defmodule Briefly.File do
     super(msg, from, state)
   end
 
-  @doc false
   def handle_info({:DOWN, _ref, :process, pid, _reason}, {_, ets} = state) do
     case :ets.lookup(ets, pid) do
       [{pid, _tmp, paths}] ->
@@ -149,7 +98,6 @@ defmodule Briefly.File do
   end
 
   @compile {:inline, i: 1}
-
   defp i(integer), do: Integer.to_string(integer)
 
   defp path(prefix, tmp) do

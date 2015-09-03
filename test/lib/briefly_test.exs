@@ -5,7 +5,7 @@ defmodule Test.Briefly.File do
     parent = self()
 
     {pid, ref} = spawn_monitor fn ->
-      {:ok, path} = Briefly.File.touch("sample")
+      {:ok, path} = Briefly.create("sample")
       send parent, {:path, path}
       File.open!(path)
     end
@@ -19,7 +19,7 @@ defmodule Test.Briefly.File do
 
     receive do
       {:DOWN, ^ref, :process, ^pid, :normal} ->
-        {:ok, _} = Briefly.File.touch("sample")
+        {:ok, _} = Briefly.create("sample")
         refute File.exists?(path)
     end
   end
