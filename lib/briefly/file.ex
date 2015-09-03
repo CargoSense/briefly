@@ -32,10 +32,6 @@ defmodule Briefly.File do
     end
   end
 
-  def handle_call(msg, from, state) do
-    super(msg, from, state)
-  end
-
   def handle_info({:DOWN, _ref, :process, pid, _reason}, {_, ets} = state) do
     case :ets.lookup(ets, pid) do
       [{pid, _tmp, paths}] ->
