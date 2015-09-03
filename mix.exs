@@ -3,7 +3,7 @@ defmodule Briefly.Mixfile do
 
   def project do
     [app: :briefly,
-     version: "0.2.0",
+     version: "0.2.1",
      elixir: "~> 1.0",
      source_url: "https://github.com/CargoSense/briefly",
      build_embedded: Mix.env == :prod,
@@ -39,7 +39,7 @@ defmodule Briefly.Mixfile do
     [description: "Temporary file support",
      files: ["lib", "config", "mix.exs", "README*", "LICENSE"],
      contributors: ["Bruce Williams"],
-     licenses: ["MIT"],
+     licenses: ["Apache 2"],
      links: %{github: "https://github.com/CargoSense/briefly"}]
   end
 
