@@ -3,7 +3,7 @@ defmodule Briefly.Mixfile do
 
   def project do
     [app: :briefly,
-     version: "0.0.1",
+     version: "0.1.0",
      elixir: "~> 1.0",
      source_url: "https://github.com/CargoSense/briefly",
      homepage_url: "https://github.com/CargoSense/briefly",
