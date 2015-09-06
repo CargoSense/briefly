@@ -9,7 +9,7 @@ defmodule Briefly.Supervisor do
     import Supervisor.Spec
 
     children = [
-      worker(Briefly.File, [])
+      worker(Briefly.Entry, [])
     ]
     supervise(children, strategy: :one_for_one)
   end

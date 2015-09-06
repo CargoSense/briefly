@@ -1,9 +1,9 @@
-defmodule Briefly.File do
+defmodule Briefly.Entry do
   @moduledoc false
 
   def server do
     Process.whereis(__MODULE__) ||
-      raise "could not find process Briefly.File. Have you started the :briefly application?"
+      raise "could not find process Briefly.Entry. Have you started the :briefly application?"
   end
 
   use GenServer
@@ -23,10 +23,11 @@ defmodule Briefly.File do
     {:ok, {[tmp, cwd], ets}}
   end
 
-  def handle_call({:file, opts}, {pid, _ref}, {tmps, ets} = state) do
+  def handle_call({:create, opts}, {pid, _ref}, {tmps, ets} = state) do
+    options = opts |> Enum.into(%{})
     case find_tmp_dir(pid, tmps, ets) do
       {:ok, tmp, paths} ->
-        {:reply, open(opts, tmp, 0, pid, ets, paths), state}
+        {:reply, open(options, tmp, 0, pid, ets, paths), state}
       {:no_tmp, _} = error ->
         {:reply, error, state}
     end
@@ -36,7 +37,7 @@ defmodule Briefly.File do
     case :ets.lookup(ets, pid) do
       [{pid, _tmp, paths}] ->
         :ets.delete(ets, pid)
-        Enum.each paths, &:file.delete/1
+        Enum.each paths, &File.rm_rf/1
       [] ->
         :ok
     end
@@ -77,15 +78,27 @@ defmodule Briefly.File do
     end
   end
 
-  defp open(opts, tmp, attempts, pid, ets, paths) when attempts < @max_attempts do
-    path = path(opts, tmp)
+  defp open(%{directory: true} = options, tmp, attempts, pid, ets, paths) when attempts < @max_attempts do
+    path = path(options, tmp)
+
+    case File.mkdir_p(path) do
+      :ok ->
+        :ets.update_element(ets, pid, {3, [path|paths]})
+        {:ok, path}
+      {:error, reason} when reason in [:eexist, :eaccess] ->
+        open(options, tmp, attempts + 1, pid, ets, paths)
+    end
+  end
+
+  defp open(options, tmp, attempts, pid, ets, paths) when attempts < @max_attempts do
+    path = path(options, tmp)
 
     case :file.write_file(path, "", [:write, :raw, :exclusive, :binary]) do
       :ok ->
         :ets.update_element(ets, pid, {3, [path|paths]})
         {:ok, path}
       {:error, reason} when reason in [:eexist, :eaccess] ->
-        open(opts, tmp, attempts + 1, pid, ets, paths)
+        open(options, tmp, attempts + 1, pid, ets, paths)
     end
   end
 
@@ -96,9 +109,8 @@ defmodule Briefly.File do
   @compile {:inline, i: 1}
   defp i(integer), do: Integer.to_string(integer)
 
-  defp path(opts, tmp) do
+  defp path(options, tmp) do
     {_mega, sec, micro} = :os.timestamp
-    options = opts |> Enum.into(%{})
     scheduler_id = :erlang.system_info(:scheduler_id)
     IO.iodata_to_binary([tmp, "/",
                          prefix(options),

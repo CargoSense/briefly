@@ -18,7 +18,7 @@ Add as a dependency to your `mix.exs`:
 ```elixir
 def deps do
   [
-    briefly: "~> 0.2"
+    briefly: "~> 0.3"
   ]
 end
 ```
@@ -33,11 +33,21 @@ end
 
 ## Example
 
+Create a file:
+
 ```elixir
 {:ok, path} = Briefly.create
 File.write!(path, "Some Text")
 content = File.read!(path)
 # When this process exits, the file at `path` is removed
+```
+
+Create a directory:
+
+```elixir
+{:ok, path} = Briefly.create(directory: true)
+File.write!(Path.join(path, "test.txt"), "Some Text")
+# When this process exits, the directory and file are removed
 ```
 
 See [the documentation](http://hexdocs.pm/briefly/Briefly.html#create/1) to see

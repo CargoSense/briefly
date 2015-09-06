@@ -43,4 +43,29 @@ defmodule Test.Briefly do
     end
   end
 
+  test "can create and remove a directory" do
+
+    parent = self()
+
+    {pid, ref} = spawn_monitor fn ->
+      {:ok, path} = Briefly.create(directory: true)
+      send parent, {:path, path}
+      assert File.stat!(path).type == :directory
+      File.write!(Path.join(path, "a-file"), "some content")
+    end
+
+    path =
+      receive do
+      {:path, path} -> path
+    after
+      1_000 -> flunk "didn't get a path"
+    end
+
+    receive do
+      {:DOWN, ^ref, :process, ^pid, :normal} ->
+        :timer.sleep(1000) # Give the rm_rf a chance to finish
+        refute File.exists?(path)
+    end
+  end
+
 end

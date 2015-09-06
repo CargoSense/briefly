@@ -10,7 +10,8 @@ defmodule Briefly do
 
   @type create_opts :: [
     {:prefix, binary},
-    {:extname, binary}
+    {:extname, binary},
+    {:directory, boolean}
   ]
 
   @doc """
@@ -21,7 +22,7 @@ defmodule Briefly do
     {:too_many_attempts, binary, pos_integer} |
     {:no_tmp, [binary]}
   def create(opts \\ []) do
-    GenServer.call(Briefly.File.server, {:file, opts})
+    GenServer.call(Briefly.Entry.server, {:create, opts})
   end
 
   @doc """
