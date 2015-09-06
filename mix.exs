@@ -36,7 +36,7 @@ defmodule Briefly.Mixfile do
   end
 
   defp package do
-    [description: "Temporary file support",
+    [description: "Simple, robust temporary file support",
      files: ["lib", "config", "mix.exs", "README*", "LICENSE"],
      contributors: ["Bruce Williams"],
      licenses: ["Apache 2"],
