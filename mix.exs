@@ -8,8 +8,8 @@ defmodule Briefly.Mixfile do
      source_url: "https://github.com/CargoSense/briefly",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     package: package,
-     deps: deps]
+     package: package(),
+     deps: deps()]
   end
 
   # Configuration for the OTP application
@@ -18,7 +18,7 @@ defmodule Briefly.Mixfile do
   def application do
     [applications: [:logger],
      mod: {Briefly, []},
-     env: default_env]
+     env: default_env()]
   end
 
   # Dependencies can be Hex packages:
