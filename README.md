@@ -23,13 +23,7 @@ def deps do
 end
 ```
 
-Install it with `mix deps.get` and don't forget to add it to your applications list:
-
-```elixir
-def application do
-  [applications: [:briefly]]
-end
-```
+Install it with `mix deps.get`.
 
 ## Example
 
