@@ -17,15 +17,43 @@ defmodule Test.Briefly do
 
     path =
       receive do
-      {:path, path} -> path
-    after
-      1_000 -> flunk "didn't get a path"
-    end
+        {:path, path} -> path
+      after
+        1_000 -> flunk "didn't get a path"
+      end
 
     receive do
       {:DOWN, ^ref, :process, ^pid, :normal} ->
         {:ok, _} = Briefly.create
         refute File.exists?(path)
+    end
+  end
+
+  test "allows removing files attached to current process" do
+    parent = self()
+
+    {pid, _ref} = spawn_monitor fn ->
+      {:ok, path} = Briefly.create
+
+      receive do
+        :cleanup ->
+          Briefly.cleanup
+          send parent, {:cleanup, path}
+      end
+
+      receive do
+        :terminate -> :ok
+      end
+    end
+
+    send pid, :cleanup
+
+    receive do
+      {:cleanup, path} ->
+        refute File.exists?(path)
+        send pid, :terminate
+    after
+      1_000 -> flunk "didn't get a path"
     end
   end
 
@@ -44,7 +72,6 @@ defmodule Test.Briefly do
   end
 
   test "can create and remove a directory" do
-
     parent = self()
 
     {pid, ref} = spawn_monitor fn ->
@@ -67,5 +94,4 @@ defmodule Test.Briefly do
         refute File.exists?(path)
     end
   end
-
 end

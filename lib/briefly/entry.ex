@@ -33,14 +33,13 @@ defmodule Briefly.Entry do
     end
   end
 
+  def handle_call(:cleanup, {pid, _ref}, {_, ets} = state) do
+    paths = cleanup(ets, pid)
+    {:reply, paths, state}
+  end
+
   def handle_info({:DOWN, _ref, :process, pid, _reason}, {_, ets} = state) do
-    case :ets.lookup(ets, pid) do
-      [{pid, _tmp, paths}] ->
-        :ets.delete(ets, pid)
-        Enum.each paths, &File.rm_rf/1
-      [] ->
-        :ok
-    end
+    cleanup(ets, pid)
     {:noreply, state}
   end
 
@@ -124,4 +123,13 @@ defmodule Briefly.Entry do
   defp extname(%{extname: value}), do: value
   defp extname(_), do: Briefly.Config.default_extname
 
+  defp cleanup(ets, pid) do
+    case :ets.lookup(ets, pid) do
+      [{^pid, _tmp, paths}] ->
+        :ets.delete(ets, pid)
+        Enum.each paths, &File.rm_rf/1
+        paths
+      [] -> []
+    end
+  end
 end
