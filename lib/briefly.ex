@@ -41,4 +41,12 @@ defmodule Briefly do
     end
   end
 
+  @doc """
+  Removes the temporary files and directories created by the current process and
+  return their paths.
+  """
+  @spec cleanup :: [binary]
+  def cleanup do
+    GenServer.call(Briefly.Entry.server, :cleanup)
+  end
 end
