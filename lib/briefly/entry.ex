@@ -17,6 +17,7 @@ defmodule Briefly.Entry do
   @max_attempts 10
 
   def init(:ok) do
+    :crypto.rand_seed()
     tmp = Briefly.Config.directory
     cwd = Path.join(File.cwd!, "tmp")
     ets = :ets.new(:briefly, [:private])
@@ -114,6 +115,7 @@ defmodule Briefly.Entry do
     IO.iodata_to_binary([tmp, "/",
                          prefix(options),
                          "-", i(sec), "-", i(micro), "-", i(scheduler_id),
+                         "-", i(:rand.uniform(10000)),
                          extname(options)])
   end
 
