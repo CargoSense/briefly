@@ -4,8 +4,8 @@ defmodule Briefly.Mixfile do
   def project do
     [
       app: :briefly,
-      version: "0.3.1",
-      elixir: "~> 1.6",
+      version: "0.4.0",
+      elixir: "~> 1.7",
       source_url: "https://github.com/CargoSense/briefly",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -32,7 +32,7 @@ defmodule Briefly.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:ex_doc, "~> 0.8", only: :dev}
+      {:ex_doc, "~> 0.19", only: :dev, runtime: false}
     ]
   end
 

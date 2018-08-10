@@ -45,9 +45,7 @@ defmodule Briefly.Entry do
     {:noreply, state}
   end
 
-  def handle_info(msg, state) do
-    super(msg, state)
-  end
+  def handle_info(_msg, state), do: {:noreply, state}
 
   ## Helpers
 
