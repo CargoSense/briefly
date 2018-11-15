@@ -9,7 +9,7 @@ defmodule Briefly.Entry do
   use GenServer
 
   def start_link() do
-    GenServer.start_link(__MODULE__, :ok, [name: __MODULE__])
+    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
   ## Callbacks
@@ -17,17 +17,19 @@ defmodule Briefly.Entry do
   @max_attempts 10
 
   def init(:ok) do
-    tmp = Briefly.Config.directory
-    cwd = Path.join(File.cwd!, "tmp")
+    tmp = Briefly.Config.directory()
+    cwd = Path.join(File.cwd!(), "tmp")
     ets = :ets.new(:briefly, [:private])
     {:ok, {[tmp, cwd], ets}}
   end
 
   def handle_call({:create, opts}, {pid, _ref}, {tmps, ets} = state) do
     options = opts |> Enum.into(%{})
+
     case find_tmp_dir(pid, tmps, ets) do
       {:ok, tmp, paths} ->
         {:reply, open(options, tmp, 0, pid, ets, paths), state}
+
       {:no_tmp, _} = error ->
         {:reply, error, state}
     end
@@ -43,9 +45,7 @@ defmodule Briefly.Entry do
     {:noreply, state}
   end
 
-  def handle_info(msg, state) do
-    super(msg, state)
-  end
+  def handle_info(_msg, state), do: {:noreply, state}
 
   ## Helpers
 
@@ -53,6 +53,7 @@ defmodule Briefly.Entry do
     case :ets.lookup(ets, pid) do
       [{^pid, tmp, paths}] ->
         {:ok, tmp, paths}
+
       [] ->
         if tmp = ensure_tmp_dir(tmps) do
           :erlang.monitor(:process, pid)
@@ -65,7 +66,7 @@ defmodule Briefly.Entry do
   end
 
   defp ensure_tmp_dir(tmps) do
-    {mega, _, _} = :os.timestamp
+    {mega, _, _} = :os.timestamp()
     subdir = "/briefly-" <> i(mega)
     Enum.find_value(tmps, &write_tmp_dir(&1 <> subdir))
   end
@@ -77,13 +78,15 @@ defmodule Briefly.Entry do
     end
   end
 
-  defp open(%{directory: true} = options, tmp, attempts, pid, ets, paths) when attempts < @max_attempts do
+  defp open(%{directory: true} = options, tmp, attempts, pid, ets, paths)
+       when attempts < @max_attempts do
     path = path(options, tmp)
 
     case File.mkdir_p(path) do
       :ok ->
-        :ets.update_element(ets, pid, {3, [path|paths]})
+        :ets.update_element(ets, pid, {3, [path | paths]})
         {:ok, path}
+
       {:error, reason} when reason in [:eexist, :eacces] ->
         open(options, tmp, attempts + 1, pid, ets, paths)
     end
@@ -94,8 +97,9 @@ defmodule Briefly.Entry do
 
     case :file.write_file(path, "", [:write, :raw, :exclusive, :binary]) do
       :ok ->
-        :ets.update_element(ets, pid, {3, [path|paths]})
+        :ets.update_element(ets, pid, {3, [path | paths]})
         {:ok, path}
+
       {:error, reason} when reason in [:eexist, :eacces] ->
         open(options, tmp, attempts + 1, pid, ets, paths)
     end
@@ -109,27 +113,38 @@ defmodule Briefly.Entry do
   defp i(integer), do: Integer.to_string(integer)
 
   defp path(options, tmp) do
-    {_mega, sec, micro} = :os.timestamp
+    {_mega, sec, micro} = :os.timestamp()
     scheduler_id = :erlang.system_info(:scheduler_id)
-    IO.iodata_to_binary([tmp, "/",
-                         prefix(options),
-                         "-", i(sec), "-", i(micro), "-", i(scheduler_id),
-                         extname(options)])
+
+    IO.iodata_to_binary([
+      tmp,
+      "/",
+      prefix(options),
+      "-",
+      i(sec),
+      "-",
+      i(micro),
+      "-",
+      i(scheduler_id),
+      extname(options)
+    ])
   end
 
   defp prefix(%{prefix: value}), do: value
-  defp prefix(_), do: Briefly.Config.default_prefix
+  defp prefix(_), do: Briefly.Config.default_prefix()
 
   defp extname(%{extname: value}), do: value
-  defp extname(_), do: Briefly.Config.default_extname
+  defp extname(_), do: Briefly.Config.default_extname()
 
   defp cleanup(ets, pid) do
     case :ets.lookup(ets, pid) do
       [{^pid, _tmp, paths}] ->
         :ets.delete(ets, pid)
-        Enum.each paths, &File.rm_rf/1
+        Enum.each(paths, &File.rm_rf/1)
         paths
-      [] -> []
+
+      [] ->
+        []
     end
   end
 end

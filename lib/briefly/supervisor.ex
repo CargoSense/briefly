@@ -11,6 +11,7 @@ defmodule Briefly.Supervisor do
     children = [
       worker(Briefly.Entry, [])
     ]
+
     supervise(children, strategy: :one_for_one)
   end
 end
