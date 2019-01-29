@@ -18,7 +18,7 @@ Add as a dependency to your `mix.exs`:
 ```elixir
 def deps do
   [
-    briefly: "~> 0.3"
+    briefly: "~> 0.4"
   ]
 end
 ```
