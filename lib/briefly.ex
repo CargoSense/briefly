@@ -9,20 +9,20 @@ defmodule Briefly do
   end
 
   @type create_opts :: [
-    {:prefix, binary},
-    {:extname, binary},
-    {:directory, boolean}
-  ]
+          {:prefix, binary},
+          {:extname, binary},
+          {:directory, boolean}
+        ]
 
   @doc """
   Requests a temporary file to be created with the given options
   """
   @spec create(create_opts) ::
-    {:ok, binary} |
-    {:too_many_attempts, binary, pos_integer} |
-    {:no_tmp, [binary]}
+          {:ok, binary}
+          | {:too_many_attempts, binary, pos_integer}
+          | {:no_tmp, [binary]}
   def create(opts \\ []) do
-    GenServer.call(Briefly.Entry.server, {:create, opts})
+    GenServer.call(Briefly.Entry.server(), {:create, opts})
   end
 
   @doc """
@@ -34,11 +34,21 @@ defmodule Briefly do
     case create(opts) do
       {:ok, path} ->
         path
+
       {:too_many_attempts, tmp, attempts} ->
         raise "tried #{attempts} times to create a temporary file at #{tmp} but failed. What gives?"
+
       {:no_tmp, _tmps} ->
         raise "could not create a tmp directory to store temporary files. Set the :briefly :directory application setting to a directory with write permission"
     end
   end
 
+  @doc """
+  Removes the temporary files and directories created by the current process and
+  return their paths.
+  """
+  @spec cleanup :: [binary]
+  def cleanup do
+    GenServer.call(Briefly.Entry.server(), :cleanup)
+  end
 end

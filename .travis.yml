@@ -1,9 +1,9 @@
 language: elixir
-elixir: 1.3
+elixir: 1.7
 notifications:
   recipients:
     - bruce.williams@cargosense.com
 otp_release:
-  - 17.1
-  - 17.5
-  - 18.0
+  - 19.3
+  - 20.3
+  - 21.0
