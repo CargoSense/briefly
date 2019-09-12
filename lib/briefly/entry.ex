@@ -23,8 +23,9 @@ defmodule Briefly.Entry do
     {:ok, {[tmp, cwd], ets}}
   end
 
-  def handle_call({:create, opts}, {pid, _ref}, {tmps, ets} = state) do
+  def handle_call({:create, opts}, {caller_pid, _ref}, {tmps, ets} = state) do
     options = opts |> Enum.into(%{})
+    pid = monitor_pid(options, caller_pid)
 
     case find_tmp_dir(pid, tmps, ets) do
       {:ok, tmp, paths} ->
@@ -35,7 +36,7 @@ defmodule Briefly.Entry do
     end
   end
 
-  def handle_call(:cleanup, {pid, _ref}, {_, ets} = state) do
+  def handle_call({:cleanup, pid}, _, {_, ets} = state) do
     paths = cleanup(ets, pid)
     {:reply, paths, state}
   end
@@ -135,6 +136,9 @@ defmodule Briefly.Entry do
 
   defp extname(%{extname: value}), do: value
   defp extname(_), do: Briefly.Config.default_extname()
+
+  defp monitor_pid(%{monitor_pid: pid}, _), do: pid
+  defp monitor_pid(_options, pid), do: pid
 
   defp cleanup(ets, pid) do
     case :ets.lookup(ets, pid) do

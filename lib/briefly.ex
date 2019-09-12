@@ -11,7 +11,8 @@ defmodule Briefly do
   @type create_opts :: [
           {:prefix, binary},
           {:extname, binary},
-          {:directory, boolean}
+          {:directory, boolean},
+          {:monitor_pid, pid()}
         ]
 
   @doc """
@@ -47,8 +48,9 @@ defmodule Briefly do
   Removes the temporary files and directories created by the current process and
   return their paths.
   """
-  @spec cleanup :: [binary]
-  def cleanup do
-    GenServer.call(Briefly.Entry.server(), :cleanup)
+  @spec cleanup(pid() | nil) :: [binary]
+  def cleanup, do: cleanup(self())
+  def cleanup(monitor_pid) do
+    GenServer.call(Briefly.Entry.server(), {:cleanup, monitor_pid})
   end
 end
