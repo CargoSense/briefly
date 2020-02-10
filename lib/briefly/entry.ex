@@ -8,15 +8,15 @@ defmodule Briefly.Entry do
 
   use GenServer
 
-  def start_link() do
-    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
+  def start_link(init_arg) do
+    GenServer.start_link(__MODULE__, init_arg, name: __MODULE__)
   end
 
   ## Callbacks
 
   @max_attempts 10
 
-  def init(:ok) do
+  def init(_init_arg) do
     tmp = Briefly.Config.directory()
     cwd = Path.join(File.cwd!(), "tmp")
     ets = :ets.new(:briefly, [:private])
