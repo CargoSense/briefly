@@ -18,9 +18,20 @@ Add as a dependency to your `mix.exs`:
 ```elixir
 def deps do
   [
-    briefly: "~> 0.4"
+    briefly: "~> 0.3"
   ]
 end
+```
+
+or grab the latest with:
+
+```elixir
+{
+  :briefly,
+  git: "https://github.com/CargoSense/briefly",
+  ref: "2526e9674a4e6996137e066a1295ea60962712b8"
+  # "~> 0.4" https://github.com/CargoSense/briefly/issues/17
+}
 ```
 
 Install it with `mix deps.get`.
