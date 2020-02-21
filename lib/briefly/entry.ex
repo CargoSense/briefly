@@ -113,21 +113,26 @@ defmodule Briefly.Entry do
   defp i(integer), do: Integer.to_string(integer)
 
   defp path(options, tmp) do
-    {_mega, sec, micro} = :os.timestamp()
-    scheduler_id = :erlang.system_info(:scheduler_id)
+    time = :erlang.monotonic_time() |> to_string |> String.trim("-")
 
-    IO.iodata_to_binary([
-      tmp,
-      "/",
-      prefix(options),
-      "-",
-      i(sec),
-      "-",
-      i(micro),
-      "-",
-      i(scheduler_id),
-      extname(options)
-    ])
+    folder =
+      Enum.join(
+        [
+          prefix(options),
+          time,
+          random_padding()
+        ],
+        "-"
+      ) <> extname(options)
+
+    Path.join([tmp, folder])
+  end
+
+  defp random_padding(length \\ 20) do
+    :crypto.strong_rand_bytes(length)
+    |> Base.url_encode64()
+    |> binary_part(0, length)
+    |> String.replace(~r/[[:punct:]]/, "")
   end
 
   defp prefix(%{prefix: value}), do: value
