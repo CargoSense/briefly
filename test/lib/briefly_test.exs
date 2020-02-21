@@ -30,6 +30,45 @@ defmodule Test.Briefly do
     end
   end
 
+  test "allows specifying different pid for monitoring" do
+    parent = self()
+
+    {monitor_pid, monitor_ref} =
+      spawn_monitor(fn ->
+        receive do
+          :shutdown -> :ok
+        end
+      end)
+
+    {pid, ref} =
+      spawn_monitor(fn ->
+        {:ok, path} = Briefly.create(monitor_pid: monitor_pid)
+        send(parent, {:path, path})
+        File.write!(path, @fixture)
+        assert File.read!(path) == @fixture
+      end)
+
+    path =
+      receive do
+        {:path, path} -> path
+      after
+        1_000 -> flunk("didn't get a path")
+      end
+
+    receive do
+      {:DOWN, ^ref, :process, ^pid, :normal} ->
+        # {:ok, _} = Briefly.create()
+        assert File.exists?(path)
+
+        send(monitor_pid, :shutdown)
+        receive do
+          {:DOWN, ^monitor_ref, :process, ^monitor_pid, :normal} ->
+            {:ok, _} = Briefly.create()
+            refute File.exists?(path)
+        end
+    end
+  end
+
   test "allows removing files attached to current process" do
     parent = self()
 
