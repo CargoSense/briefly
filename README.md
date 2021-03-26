@@ -1,6 +1,13 @@
-Briefly
-=======
+# Briefly
+
+<!-- MDOC !-->
+
 [![Build Status](https://travis-ci.org/CargoSense/briefly.svg?branch=master)](https://travis-ci.org/CargoSense/briefly)
+[![Module Version](https://img.shields.io/hexpm/v/briefly.svg)](https://hex.pm/packages/briefly)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/briefly/)
+[![Total Download](https://img.shields.io/hexpm/dt/briefly.svg)](https://hex.pm/packages/briefly)
+[![License](https://img.shields.io/hexpm/l/briefly.svg)](https://github.com/CargoSense/briefly/blob/master/LICENSE)
+[![Last Updated](https://img.shields.io/github/last-commit/CargoSense/briefly.svg)](https://github.com/CargoSense/briefly/commits/master)
 
 Simple, robust temporary file support for Elixir.
 
@@ -36,7 +43,7 @@ or grab the latest with:
 
 Install it with `mix deps.get`.
 
-## Example
+## Examples
 
 Create a file:
 
@@ -78,6 +85,26 @@ You can override the settings with your own candidates in your application Mix
 config (and pass `prefix` and `extname` to `Briefly.create` to override
 `default_prefix` and `default_extname` on a case-by-case basis).
 
-## License
+## Copyright and License
 
-See [LICENSE](./LICENSE).
+The MIT License (MIT)
+
+Copyright (c) 2015 CargoSense, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
