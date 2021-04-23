@@ -1,5 +1,9 @@
 defmodule Briefly do
-  @moduledoc File.read!("#{__DIR__}/../README.md")
+  @external_resource "README.md"
+  @moduledoc "README.md"
+             |> File.read!()
+             |> String.split("<!-- MDOC !-->")
+             |> Enum.fetch!(1)
 
   use Application
 
@@ -16,7 +20,7 @@ defmodule Briefly do
         ]
 
   @doc """
-  Requests a temporary file to be created with the given options
+  Requests a temporary file to be created with the given options.
   """
   @spec create(create_opts) ::
           {:ok, binary}
@@ -28,7 +32,7 @@ defmodule Briefly do
 
   @doc """
   Requests a temporary file to be created with the given options
-  and raises on failure
+  and raises on failure.
   """
   @spec create!(create_opts) :: binary | no_return
   def create!(opts \\ []) do
