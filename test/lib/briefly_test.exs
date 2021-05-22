@@ -61,6 +61,7 @@ defmodule Test.Briefly do
         assert File.exists?(path)
 
         send(monitor_pid, :shutdown)
+
         receive do
           {:DOWN, ^monitor_ref, :process, ^monitor_pid, :normal} ->
             {:ok, _} = Briefly.create()

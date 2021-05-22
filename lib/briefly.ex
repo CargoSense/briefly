@@ -50,6 +50,7 @@ defmodule Briefly do
   """
   @spec cleanup(pid() | nil) :: [binary]
   def cleanup, do: cleanup(self())
+
   def cleanup(monitor_pid) do
     GenServer.call(Briefly.Entry.server(), {:cleanup, monitor_pid})
   end
