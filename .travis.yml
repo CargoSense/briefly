@@ -3,6 +3,7 @@ elixir:
   - 1.9
   - 1.10
   - 1.11
+  - 1.12
 notifications:
   recipients:
     - bruce.williams@cargosense.com
@@ -13,6 +14,7 @@ otp_release:
   - 21.0
   - 22.0
   - 23.0
+  - 24.0
 matrix:
   exclude:
     - elixir: 1.9
@@ -27,3 +29,9 @@ matrix:
       otp_release: 19.3
     - elixir: 1.11
       otp_release: 20.3
+    - elixir: 1.12
+      otp_release: 19.3
+    - elixir: 1.12
+      otp_release: 20.3
+    - elixir: 1.12
+      otp_release: 21.0
