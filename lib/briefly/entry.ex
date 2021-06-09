@@ -18,9 +18,10 @@ defmodule Briefly.Entry do
 
   def init(_init_arg) do
     tmp = Briefly.Config.directory()
+    sub = Briefly.Config.sub_directory_prefix()
     cwd = Path.join(File.cwd!(), "tmp")
     ets = :ets.new(:briefly, [:private])
-    {:ok, {[tmp, cwd], ets}}
+    {:ok, {[tmp, cwd, sub], ets}}
   end
 
   def handle_call({:create, opts}, {caller_pid, _ref}, {tmps, ets} = state) do
@@ -68,7 +69,8 @@ defmodule Briefly.Entry do
 
   defp ensure_tmp_dir(tmps) do
     {mega, _, _} = :os.timestamp()
-    subdir = "briefly-" <> i(mega)
+    [_tmp, _cwd, sub] = tmps
+    subdir = sub <> "-" <> i(mega)
     Enum.find_value(tmps, &write_tmp_dir(&1 <> subdir))
   end
 
