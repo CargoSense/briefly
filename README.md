@@ -1,6 +1,7 @@
 Briefly
 =======
-[![Build Status](https://travis-ci.org/CargoSense/briefly.svg?branch=master)](https://travis-ci.org/CargoSense/briefly)
+
+![Build Status](https://github.com/CargoSense/briefly/actions/workflows/main.yml/badge.svg)
 
 Simple, robust temporary file support for Elixir.
 
