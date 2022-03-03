@@ -16,6 +16,7 @@ defmodule Briefly.Entry do
 
   @max_attempts 10
 
+  @impl true
   def init(_init_arg) do
     tmp = Briefly.Config.directory()
     cwd = Path.join(File.cwd!(), "tmp")
@@ -23,6 +24,7 @@ defmodule Briefly.Entry do
     {:ok, {[tmp, cwd], ets}}
   end
 
+  @impl true
   def handle_call({:create, opts}, {caller_pid, _ref}, {tmps, ets} = state) do
     options = opts |> Enum.into(%{})
     pid = monitor_pid(options, caller_pid)
@@ -41,6 +43,7 @@ defmodule Briefly.Entry do
     {:reply, paths, state}
   end
 
+  @impl true
   def handle_info({:DOWN, _ref, :process, pid, _reason}, {_, ets} = state) do
     cleanup(ets, pid)
     {:noreply, state}

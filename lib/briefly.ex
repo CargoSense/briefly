@@ -4,6 +4,7 @@ defmodule Briefly do
   use Application
 
   @doc false
+  @impl true
   def start(_type, _args) do
     Briefly.Supervisor.start_link()
   end
