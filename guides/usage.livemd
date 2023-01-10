@@ -1,0 +1,55 @@
+# Briefly Usage Guide
+
+```elixir
+Mix.install([
+  {:briefly, "~> 0.4.0"}
+])
+```
+
+## Temporary Files
+
+Use Briefly to create a temporary file:
+
+```elixir
+{:ok, path} = Briefly.create()
+```
+
+Then you can write to the path and read the contents of the file:
+
+```elixir
+File.write!(path, "My temp file contents")
+File.read!(path)
+```
+
+When this process exits, the file at `path` is removed.
+
+## Temporary Directories
+
+Briefly can also create a temporary directory:
+
+```elixir
+{:ok, dir} = Briefly.create(directory: true)
+```
+
+You can use [`File.stat/1`](https://hexdocs.pm/elixir/File.html#stat/1) to check the type:
+
+```elixir
+File.stat!(dir).type
+```
+
+Write to a file in the directory:
+
+```elixir
+dir |> Path.join("test.txt") |> File.write!("Some Text")
+dir |> Path.join("test.txt") |> File.read!()
+```
+
+When this process exits, the directory at `dir` and the files within are removed.
+
+## Cleanup
+
+You can always cleanup any temporary paths already created:
+
+```elixir
+Briefly.cleanup()
+```
