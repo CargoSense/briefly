@@ -1,8 +1,13 @@
 # Briefly
 
-<!-- MDOC -->
+[![Build Status](https://github.com/CargoSense/briefly/actions/workflows/main.yml/badge.svg)](https://github.com/CargoSense/briefly/actions/workflows/main.yml)
+[![Module Version](https://img.shields.io/hexpm/v/briefly.svg)](https://hex.pm/packages/briefly)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/briefly/)
+[![Total Download](https://img.shields.io/hexpm/dt/briefly.svg)](https://hex.pm/packages/briefly)
+[![License](https://img.shields.io/hexpm/l/briefly.svg)](https://github.com/CargoSense/briefly/blob/master/LICENSE)
+[![Last Updated](https://img.shields.io/github/last-commit/CargoSense/briefly.svg)](https://github.com/CargoSense/briefly/commits/master)
 
-![Build Status](https://github.com/CargoSense/briefly/actions/workflows/main.yml/badge.svg)
+<!-- MDOC -->
 
 Simple, robust temporary file support for Elixir.
 
@@ -68,4 +73,19 @@ config (and pass `prefix` and `extname` to `Briefly.create` to override
 
 ## License
 
-Briefly source code is released under Apache License 2.0. Refer to the [LICENSE](./LICENSE) file for more information.
+Copyright (c) 2015 CargoSense, Inc.
+
+Portions derived from Plug, https://github.com/elixir-lang/plug
+Copyright (c) 2013 Plataformatec
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  > http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
