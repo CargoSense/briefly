@@ -1,9 +1,8 @@
 defmodule Briefly.Mixfile do
   use Mix.Project
 
-  @version "0.4.0"
-
   @source_url "https://github.com/CargoSense/briefly"
+  @version "0.4.0"
 
   def project do
     [
@@ -23,22 +22,10 @@ defmodule Briefly.Mixfile do
     ]
   end
 
-  # Configuration for the OTP application
-  #
-  # Type `mix help compile.app` for more information
   def application do
     [applications: [:logger, :crypto], mod: {Briefly, []}, env: default_env()]
   end
 
-  # Dependencies can be Hex packages:
-  #
-  #   {:mydep, "~> 0.3.0"}
-  #
-  # Or git/path repositories:
-  #
-  #   {:mydep, git: "https://github.com/elixir-lang/mydep.git", tag: "0.1.0"}
-  #
-  # Type `mix help deps` for more examples and options
   defp deps do
     [
       {:ex_doc, "~> 0.29", only: :docs, runtime: false}
@@ -59,7 +46,6 @@ defmodule Briefly.Mixfile do
     [
       source_url: @source_url,
       source_ref: "v#{@version}",
-      deps: [],
       language: "en",
       formatters: ["html"],
       main: "usage",
