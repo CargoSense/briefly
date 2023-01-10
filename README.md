@@ -73,7 +73,7 @@ config (and pass `prefix` and `extname` to `Briefly.create` to override
 
 ## License
 
-Copyright (c) 2015 CargoSense, Inc.
+Copyright (c) 2023 CargoSense, Inc.
 
 Portions derived from Plug, https://github.com/elixir-lang/plug
 Copyright (c) 2013 Plataformatec
