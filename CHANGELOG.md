@@ -1,4 +1,4 @@
-## v0.4.0
+## v0.4.0 (2023-01-09)
 
 **Note Briefly v0.4+ requires Elixir v1.11+.**
 
