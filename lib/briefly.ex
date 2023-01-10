@@ -1,5 +1,9 @@
 defmodule Briefly do
-  @moduledoc File.read!("#{__DIR__}/../README.md")
+  @external_resource "README.md"
+  @moduledoc @external_resource
+             |> File.read!()
+             |> String.split("<!-- MDOC -->")
+             |> Enum.fetch!(1)
 
   use Application
 
