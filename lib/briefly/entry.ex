@@ -19,9 +19,10 @@ defmodule Briefly.Entry do
   @impl true
   def init(_init_arg) do
     tmp = Briefly.Config.directory()
+    sub = Briefly.Config.sub_directory_prefix()
     cwd = Path.join(File.cwd!(), "tmp")
     ets = :ets.new(:briefly, [:private])
-    {:ok, {[tmp, cwd], ets}}
+    {:ok, {[tmp, cwd, sub], ets}}
   end
 
   @impl true
@@ -71,8 +72,9 @@ defmodule Briefly.Entry do
 
   defp ensure_tmp_dir(tmps) do
     {mega, _, _} = :os.timestamp()
-    subdir = "briefly-" <> i(mega)
-    Enum.find_value(tmps, &write_tmp_dir(&1 <> subdir))
+    [_tmp, _cwd, sub] = tmps
+    subdir = "#{sub}-#{mega}"
+    Enum.find_value(tmps, &write_tmp_dir(Path.join(&1, subdir)))
   end
 
   defp write_tmp_dir(path) do
@@ -112,9 +114,6 @@ defmodule Briefly.Entry do
   defp open(_prefix, tmp, attempts, _pid, _ets, _paths) do
     {:too_many_attempts, tmp, attempts}
   end
-
-  @compile {:inline, i: 1}
-  defp i(integer), do: Integer.to_string(integer)
 
   defp path(options, tmp) do
     time = :erlang.monotonic_time() |> to_string |> String.trim("-")

@@ -52,6 +52,7 @@ following Mix config:
 # config/config.exs
 config :briefly,
   directory: [{:system, "TMPDIR"}, {:system, "TMP"}, {:system, "TEMP"}, "/tmp"],
+  sub_directory_prefix: "briefly",
   default_prefix: "briefly",
   default_extname: ""
 ```

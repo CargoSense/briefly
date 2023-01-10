@@ -3,6 +3,8 @@ defmodule Briefly.Config do
 
   def directory, do: get(:directory)
 
+  def sub_directory_prefix, do: get(:sub_directory_prefix)
+
   def default_prefix, do: get(:default_prefix)
 
   def default_extname, do: get(:default_extname)
