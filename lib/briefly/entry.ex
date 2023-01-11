@@ -31,8 +31,7 @@ defmodule Briefly.Entry do
     case :ets.lookup(@table, pid) do
       [{^pid, _tmp, paths}] ->
         :ets.delete(@table, pid)
-        Enum.each(paths, &File.rm_rf/1)
-        paths
+        delete_paths(paths)
 
       [] ->
         []
@@ -42,6 +41,7 @@ defmodule Briefly.Entry do
   ## Callbacks
   @impl true
   def init(_init_arg) do
+    Process.flag(:trap_exit, true)
     tmp = Briefly.Config.directory()
     cwd = Path.join(File.cwd!(), "tmp")
     :ets.new(@table, [:named_table, :public, :set])
@@ -61,6 +61,19 @@ defmodule Briefly.Entry do
   end
 
   def handle_info(_msg, state), do: {:noreply, state}
+
+  @impl true
+  def terminate(_reason, _state) do
+    :ets.foldl(
+      fn {_pid, _tmp, paths}, _ ->
+        delete_paths(paths)
+      end,
+      :ok,
+      @table
+    )
+
+    :ok
+  end
 
   ## Helpers
 
@@ -159,4 +172,9 @@ defmodule Briefly.Entry do
 
   defp monitor_pid(%{monitor_pid: pid}, _), do: pid
   defp monitor_pid(_options, pid), do: pid
+
+  defp delete_paths(paths) do
+    for path <- paths, do: File.rm_rf(path)
+    :ok
+  end
 end

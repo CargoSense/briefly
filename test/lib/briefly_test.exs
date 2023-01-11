@@ -140,4 +140,10 @@ defmodule Test.Briefly do
         refute File.exists?(path)
     end
   end
+
+  test "terminate removes all files" do
+    {:ok, path} = Briefly.create()
+    :ok = Briefly.Entry.terminate(:shutdown, [])
+    refute File.exists?(path)
+  end
 end
