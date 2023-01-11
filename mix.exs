@@ -2,12 +2,12 @@ defmodule Briefly.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/CargoSense/briefly"
-  @version "0.4.0"
+  @version "0.4.1"
 
   def project do
     [
       app: :briefly,
-      version: "0.4.0",
+      version: @version,
       elixir: "~> 1.11",
       source_url: @source_url,
       build_embedded: Mix.env() == :prod,
