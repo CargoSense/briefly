@@ -1,6 +1,9 @@
 defmodule Briefly.Entry do
   @moduledoc false
 
+  @table __MODULE__
+  @max_attempts 10
+
   def server do
     Process.whereis(__MODULE__) ||
       raise "could not find process Briefly.Entry. Have you started the :briefly application?"
@@ -12,40 +15,48 @@ defmodule Briefly.Entry do
     GenServer.start_link(__MODULE__, init_arg, name: __MODULE__)
   end
 
+  @doc false
+  def create(%{} = options) do
+    case find_tmp_dir(options) do
+      {:ok, pid, tmp, paths} ->
+        open(options, tmp, 0, pid, paths)
+
+      {:no_tmp, _} = error ->
+        error
+    end
+  end
+
+  @doc false
+  def cleanup(pid) do
+    case :ets.lookup(@table, pid) do
+      [{^pid, _tmp, paths}] ->
+        :ets.delete(@table, pid)
+        Enum.each(paths, &File.rm_rf/1)
+        paths
+
+      [] ->
+        []
+    end
+  end
+
   ## Callbacks
-
-  @max_attempts 10
-
   @impl true
   def init(_init_arg) do
     tmp = Briefly.Config.directory()
     cwd = Path.join(File.cwd!(), "tmp")
-    ets = :ets.new(:briefly, [:private])
-    {:ok, {[tmp, cwd], ets}}
+    :ets.new(@table, [:named_table, :public, :set])
+    {:ok, [tmp, cwd]}
   end
 
   @impl true
-  def handle_call({:create, opts}, {caller_pid, _ref}, {tmps, ets} = state) do
-    options = opts |> Enum.into(%{})
-    pid = monitor_pid(options, caller_pid)
-
-    case find_tmp_dir(pid, tmps, ets) do
-      {:ok, tmp, paths} ->
-        {:reply, open(options, tmp, 0, pid, ets, paths), state}
-
-      {:no_tmp, _} = error ->
-        {:reply, error, state}
-    end
-  end
-
-  def handle_call({:cleanup, pid}, _, {_, ets} = state) do
-    paths = cleanup(ets, pid)
-    {:reply, paths, state}
+  def handle_call({:briefly, pid}, _, dirs) do
+    Process.monitor(pid)
+    {:reply, {:ok, dirs}, dirs}
   end
 
   @impl true
-  def handle_info({:DOWN, _ref, :process, pid, _reason}, {_, ets} = state) do
-    cleanup(ets, pid)
+  def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
+    cleanup(pid)
     {:noreply, state}
   end
 
@@ -53,16 +64,20 @@ defmodule Briefly.Entry do
 
   ## Helpers
 
-  defp find_tmp_dir(pid, tmps, ets) do
-    case :ets.lookup(ets, pid) do
+  defp find_tmp_dir(options) do
+    pid = monitor_pid(options, self())
+    server = server()
+
+    case :ets.lookup(@table, pid) do
       [{^pid, tmp, paths}] ->
-        {:ok, tmp, paths}
+        {:ok, pid, tmp, paths}
 
       [] ->
+        {:ok, tmps} = GenServer.call(server, {:briefly, pid})
+
         if tmp = ensure_tmp_dir(tmps) do
-          :erlang.monitor(:process, pid)
-          :ets.insert(ets, {pid, tmp, []})
-          {:ok, tmp, []}
+          true = :ets.insert_new(@table, {pid, tmp, []})
+          {:ok, pid, tmp, []}
         else
           {:no_tmp, tmps}
         end
@@ -82,34 +97,34 @@ defmodule Briefly.Entry do
     end
   end
 
-  defp open(%{directory: true} = options, tmp, attempts, pid, ets, paths)
+  defp open(%{directory: true} = options, tmp, attempts, pid, paths)
        when attempts < @max_attempts do
     path = path(options, tmp)
 
     case File.mkdir_p(path) do
       :ok ->
-        :ets.update_element(ets, pid, {3, [path | paths]})
+        :ets.update_element(@table, pid, {3, [path | paths]})
         {:ok, path}
 
       {:error, reason} when reason in [:eexist, :eacces] ->
-        open(options, tmp, attempts + 1, pid, ets, paths)
+        open(options, tmp, attempts + 1, pid, paths)
     end
   end
 
-  defp open(options, tmp, attempts, pid, ets, paths) when attempts < @max_attempts do
+  defp open(options, tmp, attempts, pid, paths) when attempts < @max_attempts do
     path = path(options, tmp)
 
     case :file.write_file(path, "", [:write, :raw, :exclusive, :binary]) do
       :ok ->
-        :ets.update_element(ets, pid, {3, [path | paths]})
+        :ets.update_element(@table, pid, {3, [path | paths]})
         {:ok, path}
 
       {:error, reason} when reason in [:eexist, :eacces] ->
-        open(options, tmp, attempts + 1, pid, ets, paths)
+        open(options, tmp, attempts + 1, pid, paths)
     end
   end
 
-  defp open(_prefix, tmp, attempts, _pid, _ets, _paths) do
+  defp open(_prefix, tmp, attempts, _pid, _paths) do
     {:too_many_attempts, tmp, attempts}
   end
 
@@ -144,16 +159,4 @@ defmodule Briefly.Entry do
 
   defp monitor_pid(%{monitor_pid: pid}, _), do: pid
   defp monitor_pid(_options, pid), do: pid
-
-  defp cleanup(ets, pid) do
-    case :ets.lookup(ets, pid) do
-      [{^pid, _tmp, paths}] ->
-        :ets.delete(ets, pid)
-        Enum.each(paths, &File.rm_rf/1)
-        paths
-
-      [] ->
-        []
-    end
-  end
 end

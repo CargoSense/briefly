@@ -28,7 +28,9 @@ defmodule Briefly do
           | {:too_many_attempts, binary, pos_integer}
           | {:no_tmp, [binary]}
   def create(opts \\ []) do
-    GenServer.call(Briefly.Entry.server(), {:create, opts})
+    opts
+    |> Enum.into(%{})
+    |> Briefly.Entry.create()
   end
 
   @doc """
@@ -54,9 +56,9 @@ defmodule Briefly do
   return their paths.
   """
   @spec cleanup(pid() | nil) :: [binary]
-  def cleanup, do: cleanup(self())
+  def cleanup, do: Briefly.Entry.cleanup(self())
 
   def cleanup(monitor_pid) do
-    GenServer.call(Briefly.Entry.server(), {:cleanup, monitor_pid})
+    Briefly.Entry.cleanup(monitor_pid)
   end
 end
