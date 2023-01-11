@@ -1,7 +1,8 @@
 defmodule Briefly.Entry do
   @moduledoc false
 
-  @table __MODULE__
+  @dir_table __MODULE__.Dir
+  @path_table __MODULE__.Path
   @max_attempts 10
 
   def server do
@@ -18,8 +19,8 @@ defmodule Briefly.Entry do
   @doc false
   def create(%{} = options) do
     case find_tmp_dir(options) do
-      {:ok, pid, tmp, paths} ->
-        open(options, tmp, 0, pid, paths)
+      {:ok, tmp} ->
+        open(options, tmp, 0)
 
       {:no_tmp, _} = error ->
         error
@@ -28,10 +29,14 @@ defmodule Briefly.Entry do
 
   @doc false
   def cleanup(pid) do
-    case :ets.lookup(@table, pid) do
-      [{^pid, _tmp, paths}] ->
-        :ets.delete(@table, pid)
-        delete_paths(paths)
+    case :ets.lookup(@dir_table, pid) do
+      [{pid, _tmp}] ->
+        :ets.delete(@dir_table, pid)
+
+        entries = :ets.lookup(@path_table, pid)
+        Enum.each(entries, &delete_path/1)
+
+        for {_path, path} <- entries, do: path
 
       [] ->
         []
@@ -44,12 +49,13 @@ defmodule Briefly.Entry do
     Process.flag(:trap_exit, true)
     tmp = Briefly.Config.directory()
     cwd = Path.join(File.cwd!(), "tmp")
-    :ets.new(@table, [:named_table, :public, :set])
+    :ets.new(@dir_table, [:named_table, :public, :set])
+    :ets.new(@path_table, [:named_table, :public, :duplicate_bag])
     {:ok, [tmp, cwd]}
   end
 
   @impl true
-  def handle_call({:briefly, pid}, _, dirs) do
+  def handle_call({:monitor, pid}, _from, dirs) do
     Process.monitor(pid)
     {:reply, {:ok, dirs}, dirs}
   end
@@ -64,33 +70,26 @@ defmodule Briefly.Entry do
 
   @impl true
   def terminate(_reason, _state) do
-    :ets.foldl(
-      fn {_pid, _tmp, paths}, _ ->
-        delete_paths(paths)
-      end,
-      :ok,
-      @table
-    )
-
-    :ok
+    folder = fn entry, :ok -> delete_path(entry) end
+    :ets.foldl(folder, :ok, @path_table)
   end
 
   ## Helpers
 
-  defp find_tmp_dir(options) do
-    pid = monitor_pid(options, self())
+  defp find_tmp_dir(_options) do
+    pid = self()
     server = server()
 
-    case :ets.lookup(@table, pid) do
-      [{^pid, tmp, paths}] ->
-        {:ok, pid, tmp, paths}
+    case :ets.lookup(@dir_table, pid) do
+      [{^pid, tmp}] ->
+        {:ok, tmp}
 
       [] ->
-        {:ok, tmps} = GenServer.call(server, {:briefly, pid})
+        {:ok, tmps} = GenServer.call(server, {:monitor, pid})
 
         if tmp = ensure_tmp_dir(tmps) do
-          true = :ets.insert_new(@table, {pid, tmp, []})
-          {:ok, pid, tmp, []}
+          true = :ets.insert_new(@dir_table, {pid, tmp})
+          {:ok, tmp}
         else
           {:no_tmp, tmps}
         end
@@ -110,34 +109,33 @@ defmodule Briefly.Entry do
     end
   end
 
-  defp open(%{directory: true} = options, tmp, attempts, pid, paths)
-       when attempts < @max_attempts do
+  defp open(%{directory: true} = options, tmp, attempts) when attempts < @max_attempts do
     path = path(options, tmp)
 
     case File.mkdir_p(path) do
       :ok ->
-        :ets.update_element(@table, pid, {3, [path | paths]})
+        :ets.insert(@path_table, {self(), path})
         {:ok, path}
 
       {:error, reason} when reason in [:eexist, :eacces] ->
-        open(options, tmp, attempts + 1, pid, paths)
+        open(options, tmp, attempts + 1)
     end
   end
 
-  defp open(options, tmp, attempts, pid, paths) when attempts < @max_attempts do
+  defp open(options, tmp, attempts) when attempts < @max_attempts do
     path = path(options, tmp)
 
     case :file.write_file(path, "", [:write, :raw, :exclusive, :binary]) do
       :ok ->
-        :ets.update_element(@table, pid, {3, [path | paths]})
+        :ets.insert(@path_table, {self(), path})
         {:ok, path}
 
       {:error, reason} when reason in [:eexist, :eacces] ->
-        open(options, tmp, attempts + 1, pid, paths)
+        open(options, tmp, attempts + 1)
     end
   end
 
-  defp open(_prefix, tmp, attempts, _pid, _paths) do
+  defp open(_prefix, tmp, attempts) do
     {:too_many_attempts, tmp, attempts}
   end
 
@@ -173,8 +171,8 @@ defmodule Briefly.Entry do
   defp monitor_pid(%{monitor_pid: pid}, _), do: pid
   defp monitor_pid(_options, pid), do: pid
 
-  defp delete_paths(paths) do
-    for path <- paths, do: File.rm_rf(path)
+  defp delete_path({_pid, path}) do
+    File.rm_rf(path)
     :ok
   end
 end

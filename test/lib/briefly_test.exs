@@ -79,7 +79,7 @@ defmodule Test.Briefly do
 
         receive do
           :cleanup ->
-            Briefly.cleanup()
+            assert [_] = Briefly.cleanup()
             send(parent, {:cleanup, path})
         end
 
