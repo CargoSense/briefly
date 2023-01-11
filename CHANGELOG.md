@@ -1,3 +1,7 @@
+## v0.4.1
+
+- Fix an issue with custom tmp dirs without a trailing slash ([#24](https://github.com/CargoSense/briefly/pull/24)) @srgpqt
+
 ## v0.4.0 (2023-01-09)
 
 **Note Briefly v0.4+ requires Elixir v1.11+.**
