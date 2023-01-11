@@ -1,4 +1,4 @@
-## v0.4.1
+## v0.4.1 (2023-01-11)
 
 - Fix an issue with custom tmp dirs without a trailing slash ([#24](https://github.com/CargoSense/briefly/pull/24)) @srgpqt
 
