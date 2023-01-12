@@ -53,7 +53,7 @@ defmodule Briefly do
   @doc """
   Removes the temporary files and directories created by the process and returns their paths.
   """
-  @spec cleanup(pid()) :: [binary]
+  @spec cleanup(pid) :: [binary]
   def cleanup(pid \\ self()) do
     Briefly.Entry.cleanup(pid)
   end
