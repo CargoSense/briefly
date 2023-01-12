@@ -86,7 +86,7 @@ defmodule Briefly.Entry do
   @impl true
   def init(_init_arg) do
     Process.flag(:trap_exit, true)
-    tmp = Briefly.Config.directory()
+    tmp = Briefly.Config.directory() |> Path.expand()
     cwd = Path.join(File.cwd!(), "tmp")
     :ets.new(@dir_table, [:named_table, :public, :set])
     :ets.new(@path_table, [:named_table, :public, :duplicate_bag])
