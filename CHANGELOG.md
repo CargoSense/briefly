@@ -1,3 +1,21 @@
+## v0.5.0
+
+- Add `Briefly.give_away/3` to transfer ownership of a tmp file.
+- Deprecate the `:monitor_pid` option.
+
+If you were previously using `:monitor_pid` like this:
+
+```elixir
+{:ok, path} = Briefly.create(monitor_pid: pid)
+```
+
+...then change it to this:
+
+```elixir
+{:ok, path} = Briefly.create()
+:ok = Briefly.give_away(path, pid)
+```
+
 ## v0.4.1 (2023-01-11)
 
 - Fix an issue with custom tmp dirs without a trailing slash ([#24](https://github.com/CargoSense/briefly/pull/24)) @srgpqt

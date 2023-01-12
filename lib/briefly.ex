@@ -16,8 +16,7 @@ defmodule Briefly do
   @type create_opts :: [
           {:prefix, binary},
           {:extname, binary},
-          {:directory, boolean},
-          {:monitor_pid, pid()}
+          {:directory, boolean}
         ]
 
   @doc """
@@ -60,5 +59,15 @@ defmodule Briefly do
 
   def cleanup(monitor_pid) do
     Briefly.Entry.cleanup(monitor_pid)
+  end
+
+  @doc """
+  Assign ownership of the given tmp file to another process.
+  """
+  @spec give_away(binary, pid, pid) :: :ok | {:error, binary}
+  def give_away(path, to_pid, from_pid \\ self())
+
+  def give_away(path, to_pid, from_pid) do
+    Briefly.Entry.give_away(path, to_pid, from_pid)
   end
 end
