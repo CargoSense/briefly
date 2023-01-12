@@ -16,8 +16,7 @@ defmodule Briefly do
   @type create_opts :: [
           {:prefix, binary},
           {:extname, binary},
-          {:directory, boolean},
-          {:monitor_pid, pid()}
+          {:directory, boolean}
         ]
 
   @doc """
@@ -28,7 +27,9 @@ defmodule Briefly do
           | {:too_many_attempts, binary, pos_integer}
           | {:no_tmp, [binary]}
   def create(opts \\ []) do
-    GenServer.call(Briefly.Entry.server(), {:create, opts})
+    opts
+    |> Enum.into(%{})
+    |> Briefly.Entry.create()
   end
 
   @doc """
@@ -50,13 +51,20 @@ defmodule Briefly do
   end
 
   @doc """
-  Removes the temporary files and directories created by the current process and
-  return their paths.
+  Removes the temporary files and directories created by the process and returns their paths.
   """
-  @spec cleanup(pid() | nil) :: [binary]
-  def cleanup, do: cleanup(self())
+  @spec cleanup(pid) :: [binary]
+  def cleanup(pid \\ self()) do
+    Briefly.Entry.cleanup(pid)
+  end
 
-  def cleanup(monitor_pid) do
-    GenServer.call(Briefly.Entry.server(), {:cleanup, monitor_pid})
+  @doc """
+  Assign ownership of the given tmp file to another process.
+  """
+  @spec give_away(binary, pid, pid) :: :ok | {:error, :unknown_path}
+  def give_away(path, to_pid, from_pid \\ self())
+
+  def give_away(path, to_pid, from_pid) do
+    Briefly.Entry.give_away(path, to_pid, from_pid)
   end
 end
