@@ -43,6 +43,14 @@ jobs:
         os: ["ubuntu-20.04"]
         elixir: ["1.14", "1.13", "1.12", "1.11"]
         otp: ["25", "24", "23", "22"]
+        exclude:
+          - elixir: "1.14"
+            otp: "22"
+          - elixir: "1.12"
+            otp: "25"
+          - elixir: "1.11"
+            otp: "25"
+
     steps:
       - uses: actions/checkout@v3
       - uses: erlef/setup-beam@v1
