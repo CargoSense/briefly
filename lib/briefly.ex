@@ -51,20 +51,17 @@ defmodule Briefly do
   end
 
   @doc """
-  Removes the temporary files and directories created by the current process and
-  return their paths.
+  Removes the temporary files and directories created by the process and returns their paths.
   """
-  @spec cleanup(pid() | nil) :: [binary]
-  def cleanup, do: Briefly.Entry.cleanup(self())
-
-  def cleanup(monitor_pid) do
-    Briefly.Entry.cleanup(monitor_pid)
+  @spec cleanup(pid()) :: [binary]
+  def cleanup(pid \\ self()) do
+    Briefly.Entry.cleanup(pid)
   end
 
   @doc """
   Assign ownership of the given tmp file to another process.
   """
-  @spec give_away(binary, pid, pid) :: :ok | {:error, binary}
+  @spec give_away(binary, pid, pid) :: :ok | {:error, :unknown_path}
   def give_away(path, to_pid, from_pid \\ self())
 
   def give_away(path, to_pid, from_pid) do
