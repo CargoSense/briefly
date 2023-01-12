@@ -149,7 +149,7 @@ defmodule Briefly.Entry do
 
   defp generate_tmp_dir(tmp_roots) do
     {mega, _, _} = :os.timestamp()
-    subdir = "briefly-#{mega}"
+    subdir = "briefly-" <> i(mega)
 
     if tmp = Enum.find_value(tmp_roots, &write_tmp_dir(Path.join(&1, subdir))) do
       {:ok, tmp}
@@ -196,27 +196,18 @@ defmodule Briefly.Entry do
   end
 
   defp path(options, tmp) do
-    time = :erlang.monotonic_time() |> to_string |> String.trim("-")
+    sec = :os.system_time(:seconds)
+    rand = :rand.uniform(999_999_999_999)
+    scheduler_id = :erlang.system_info(:scheduler_id)
 
-    folder =
-      Enum.join(
-        [
-          prefix(options),
-          time,
-          random_padding()
-        ],
-        "-"
-      ) <> extname(options)
-
-    Path.join([tmp, folder])
+    tmp <>
+      "/" <>
+      prefix(options) <>
+      "-" <> i(sec) <> "-" <> i(rand) <> "-" <> i(scheduler_id) <> extname(options)
   end
 
-  defp random_padding(length \\ 20) do
-    :crypto.strong_rand_bytes(length)
-    |> Base.url_encode64()
-    |> binary_part(0, length)
-    |> String.replace(~r/[[:punct:]]/, "")
-  end
+  @compile {:inline, i: 1}
+  defp i(integer), do: Integer.to_string(integer)
 
   defp prefix(%{prefix: value}), do: value
   defp prefix(_), do: Briefly.Config.default_prefix()
