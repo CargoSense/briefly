@@ -37,6 +37,8 @@ File.read!(path)
 
 If you want to use Briefly in a Mix project, you can add the above dependency to your list of dependencies in `mix.exs`.
 
+To use Briefly outside of the context of an application's dependency tree (e.g. in an .exs file), first run `Briefly.start`.
+
 Briefly can also create a temporary directory:
 
 
