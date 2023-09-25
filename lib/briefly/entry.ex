@@ -173,8 +173,14 @@ defmodule Briefly.Entry do
         :ets.insert(@path_table, {self(), path})
         {:ok, path}
 
+      {:error, :enospc} ->
+        {:no_space, path}
+
       {:error, reason} when reason in [:eexist, :eacces] ->
         open(options, tmp, attempts + 1)
+
+      error ->
+        error
     end
   end
 
@@ -186,8 +192,14 @@ defmodule Briefly.Entry do
         :ets.insert(@path_table, {self(), path})
         {:ok, path}
 
+      {:error, :enospc} ->
+        {:no_space, path}
+
       {:error, reason} when reason in [:eexist, :eacces] ->
         open(options, tmp, attempts + 1)
+
+      error ->
+        error
     end
   end
 
