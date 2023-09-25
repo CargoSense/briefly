@@ -24,6 +24,7 @@ defmodule Briefly do
   """
   @spec create(create_opts) ::
           {:ok, binary}
+          | {:no_space, binary}
           | {:too_many_attempts, binary, pos_integer}
           | {:no_tmp, [binary]}
   def create(opts \\ []) do
