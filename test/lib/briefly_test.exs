@@ -320,6 +320,131 @@ defmodule Test.Briefly do
           refute File.exists?(path1)
       end
     end
+
+    test "cleans up gifted temporary directories when appropriate" do
+      parent = self()
+
+      {receive1_pid, receive1_ref} =
+        spawn_monitor(fn ->
+          receive do
+            :exit -> nil
+          end
+        end)
+
+      {receive2_pid, receive2_ref} =
+        spawn_monitor(fn ->
+          receive do
+            :exit -> nil
+          end
+        end)
+
+      {give_pid, give_ref} =
+        spawn_monitor(fn ->
+          {:ok, path1} = Briefly.create()
+          send(parent, {:path1, path1})
+          File.open!(path1)
+
+          {:ok, path2} = Briefly.create()
+          send(parent, {:path2, path2})
+          File.open!(path2)
+
+          :ok = Briefly.give_away(path1, receive1_pid)
+          :ok = Briefly.give_away(path2, receive1_pid)
+
+          send(parent, :given_away)
+
+          receive do
+            :continue -> :ok
+          end
+
+          {:ok, path3} = Briefly.create()
+          send(parent, {:path3, path3})
+          File.open!(path3)
+
+          :ok = Briefly.give_away(path3, receive2_pid)
+        end)
+
+      path1 =
+        receive do
+          {:path1, path} -> path
+        after
+          1_000 -> flunk("didn't get a path")
+        end
+
+      path2 =
+        receive do
+          {:path2, path} -> path
+        after
+          1_000 -> flunk("didn't get a path")
+        end
+
+      receive do
+        :given_away -> nil
+      after
+        1_000 -> flunk("didn't get signal for given_away")
+      end
+
+      send(receive1_pid, :exit)
+
+      receive do
+        {:DOWN, ^receive1_ref, :process, ^receive1_pid, :normal} ->
+          # force sync by creating file in unknown process
+          parent = self()
+
+          spawn(fn ->
+            {:ok, _} = Briefly.create()
+            send(parent, :continue)
+          end)
+
+          receive do
+            :continue -> :ok
+          end
+
+          cleanup_wait_loop(receive1_pid)
+
+          refute File.exists?(path1)
+          refute File.exists?(path2)
+          assert File.exists?(Path.dirname(path1))
+      end
+
+      send(give_pid, :continue)
+
+      path3 =
+        receive do
+          {:path3, path} -> path
+        after
+          1_000 -> flunk("didn't get a path")
+        end
+
+      receive do
+        {:DOWN, ^give_ref, :process, ^give_pid, :normal} ->
+          {:ok, _} = Briefly.create()
+
+          assert File.exists?(path3)
+      end
+
+      send(receive2_pid, :exit)
+
+      receive do
+        {:DOWN, ^receive2_ref, :process, ^receive2_pid, :normal} ->
+          # force sync by creating file in unknown process
+          parent = self()
+
+          spawn(fn ->
+            {:ok, _} = Briefly.create()
+            send(parent, :continue)
+          end)
+
+          receive do
+            :continue -> :ok
+          end
+
+          cleanup_wait_loop(receive2_pid)
+
+          refute File.exists?(path3)
+          refute File.exists?(Path.dirname(path3))
+      end
+    end
   end
 
   test "returns an io device if device is requested" do

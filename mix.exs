@@ -56,6 +56,7 @@ defmodule Briefly.Mixfile do
   defp default_env do
     [
       directory: [{:system, "TMPDIR"}, {:system, "TMP"}, {:system, "TEMP"}, "/tmp"],
+      directory_mode: 0o755,
       default_prefix: "briefly",
       default_extname: ""
     ]
