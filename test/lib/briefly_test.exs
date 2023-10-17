@@ -117,12 +117,38 @@ defmodule Test.Briefly do
       end)
   end
 
-  test "can create and remove a directory" do
+  test "can create and remove a directory with the deprecated boolean option" do
     parent = self()
 
     {pid, ref} =
       spawn_monitor(fn ->
         {:ok, path} = Briefly.create(directory: true)
+        send(parent, {:path, path})
+        assert File.stat!(path).type == :directory
+        File.write!(Path.join(path, "a-file"), "some content")
+      end)
+
+    path =
+      receive do
+        {:path, path} -> path
+      after
+        1_000 -> flunk("didn't get a path")
+      end
+
+    receive do
+      {:DOWN, ^ref, :process, ^pid, :normal} ->
+        # Give the rm_rf a chance to finish
+        :timer.sleep(1000)
+        refute File.exists?(path)
+    end
+  end
+
+  test "can create and remove a directory with the type: :directory option" do
+    parent = self()
+
+    {pid, ref} =
+      spawn_monitor(fn ->
+        {:ok, path} = Briefly.create(type: :directory)
         send(parent, {:path, path})
         assert File.stat!(path).type == :directory
         File.write!(Path.join(path, "a-file"), "some content")
@@ -292,6 +318,41 @@ defmodule Test.Briefly do
           refute File.exists?(path)
           refute File.exists?(path1)
       end
+    end
+  end
+
+  test "returns an io device if device is requested" do
+    parent = self()
+
+    {pid, ref} =
+      spawn_monitor(fn ->
+        {:ok, path1, device1} = Briefly.create(%{type: :device})
+        IO.write(device1, @fixture)
+        assert File.read!(path1) == @fixture
+        {:ok, path2, device2} = Briefly.create(%{type: :device})
+        File.write!(path2, @fixture)
+        assert IO.read(device2, 1024) == @fixture
+        send(parent, {:paths_and_devices, [path1, path2], [device1, device2]})
+      end)
+
+    {paths, devices} =
+      receive do
+        {:paths_and_devices, paths, devices} -> {paths, devices}
+      after
+        1_000 -> flunk("didn't get paths")
+      end
+
+    receive do
+      {:DOWN, ^ref, :process, ^pid, :normal} ->
+        {:ok, _} = Briefly.create()
+
+        Enum.each(paths, fn path ->
+          refute File.exists?(path)
+        end)
+
+        Enum.each(devices, fn device ->
+          refute Process.info(device)
+        end)
     end
   end
 end

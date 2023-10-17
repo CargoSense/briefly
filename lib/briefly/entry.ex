@@ -21,9 +21,14 @@ defmodule Briefly.Entry do
   def create(%{monitor_pid: pid} = options) do
     IO.warn("the :monitor_pid option is deprecated, please use Briefly.give_away/3 instead.")
 
-    with {:ok, path} <- create(Map.delete(options, :monitor_pid)) do
-      :ok = give_away(path, pid, self())
-      {:ok, path}
+    case create(Map.delete(options, :monitor_pid)) do
+      {:ok, path} ->
+        :ok = give_away(path, pid, self())
+        {:ok, path}
+
+      {:ok, path, io_pid} ->
+        :ok = give_away(path, pid, self())
+        {:ok, path, io_pid}
     end
   end
 
@@ -36,13 +41,13 @@ defmodule Briefly.Entry do
   @doc false
   def cleanup(pid) do
     case :ets.lookup(@dir_table, pid) do
-      [{pid, _tmp}] ->
+      [{^pid, _tmp}] ->
         :ets.delete(@dir_table, pid)
 
         entries = :ets.lookup(@path_table, pid)
         Enum.each(entries, &delete_path/1)
 
-        for {_path, path} <- entries, do: path
+        for {_pid, path} <- entries, do: path
 
       [] ->
         []
@@ -161,7 +166,7 @@ defmodule Briefly.Entry do
     end
   end
 
-  defp open(%{directory: true} = options, tmp, attempts, _) when attempts < @max_attempts do
+  defp open(%{type: :directory} = options, tmp, attempts, _) when attempts < @max_attempts do
     path = path(options, tmp)
 
     case File.mkdir_p(path) do
@@ -176,6 +181,28 @@ defmodule Briefly.Entry do
       {:error, code} ->
         {:error, %Briefly.WriteError{code: code, entry_type: :directory, tmp_dir: tmp}}
     end
+  end
+
+  defp open(%{type: :device} = options, tmp, attempts, _) when attempts < @max_attempts do
+    path = path(options, tmp)
+
+    case File.open(path, [:read, :write, :exclusive]) do
+      {:ok, device_pid} ->
+        :ets.insert(@path_table, {self(), path})
+        {:ok, path, device_pid}
+
+      {:error, reason} when reason in [:eexist, :eacces] ->
+        last_error = %Briefly.WriteError{code: reason, entry_type: :file, tmp_dir: tmp}
+        open(options, tmp, attempts + 1, last_error)
+
+      {:error, code} ->
+        {:error, %Briefly.WriteError{code: code, entry_type: :file, tmp_dir: tmp}}
+    end
+  end
+
+  defp open(%{directory: true} = options, tmp, attempts, last_error) do
+    new_opts = Map.put(options, :type, :directory)
+    open(new_opts, tmp, attempts, last_error)
   end
 
   defp open(options, tmp, attempts, _) when attempts < @max_attempts do
