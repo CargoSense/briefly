@@ -57,25 +57,22 @@ defmodule Briefly.Entry do
   @doc false
   def give_away(path, to_pid, from_pid)
       when is_binary(path) and is_pid(to_pid) and is_pid(from_pid) do
-    with [{^from_pid, _tmp}] <- :ets.lookup(@dir_table, from_pid),
+    with true <- pid_registered?(from_pid),
          true <- path_owner?(from_pid, path) do
-      case :ets.lookup(@dir_table, to_pid) do
-        [{^to_pid, _tmp}] ->
-          :ets.insert(@path_table, {to_pid, path})
-          :ets.delete_object(@path_table, {from_pid, path})
+      if pid_registered?(to_pid) do
+        :ets.insert(@path_table, {to_pid, path})
+        :ets.delete_object(@path_table, {from_pid, path})
+        :ok
+      else
+        server = server()
 
-          :ok
+        {:ok, tmps} = GenServer.call(server, :roots)
+        {:ok, tmp} = generate_tmp_dir(tmps)
+        :ok = GenServer.call(server, {:give_away, to_pid, tmp, path})
 
-        [] ->
-          server = server()
+        :ets.delete_object(@path_table, {from_pid, path})
 
-          {:ok, tmps} = GenServer.call(server, :roots)
-          {:ok, tmp} = generate_tmp_dir(tmps)
-          :ok = GenServer.call(server, {:give_away, to_pid, tmp, path})
-
-          :ets.delete_object(@path_table, {from_pid, path})
-
-          :ok
+        :ok
       end
     else
       _ ->
@@ -254,6 +251,10 @@ defmodule Briefly.Entry do
 
   defp extname(%{extname: value}), do: value
   defp extname(_), do: Briefly.Config.default_extname()
+
+  defp pid_registered?(pid) do
+    :ets.member(@dir_table, pid)
+  end
 
   defp path_owner?(pid, path) do
     owned_paths = :ets.lookup(@path_table, pid)
