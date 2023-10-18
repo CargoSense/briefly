@@ -67,6 +67,7 @@ defmodule Test.Briefly do
         receive do
           {:DOWN, ^monitor_ref, :process, ^monitor_pid, :normal} ->
             {:ok, _} = Briefly.create()
+            cleanup_wait_loop(monitor_pid)
             refute File.exists?(path)
         end
     end
@@ -354,5 +355,16 @@ defmodule Test.Briefly do
           refute Process.info(device)
         end)
     end
+  end
+
+  # There is no synchronization between cleanup and other monitors, so there
+  # is a race condition where the cleanup may not have happened yet. Use ets
+  # as a signal that the test can use to busy wait. More likely to occur with
+  # debugging prints or intentional delays
+  defp cleanup_wait_loop(pid) do
+     if :ets.member(Briefly.Entry.Dir, pid) do
+       Process.sleep(100)
+       cleanup_wait_loop(pid)
+     end
   end
 end
