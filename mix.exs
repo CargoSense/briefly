@@ -23,7 +23,7 @@ defmodule Briefly.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :crypto], mod: {Briefly, []}, env: default_env()]
+    [extra_applications: [:logger, :crypto], mod: {Briefly, []}, env: default_env()]
   end
 
   defp deps do
