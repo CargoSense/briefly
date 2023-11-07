@@ -28,12 +28,8 @@ defmodule Briefly.Entry do
   end
 
   def create(%{} = options) do
-    case ensure_tmp() do
-      {:ok, tmp} ->
-        open(options, tmp, 0)
-
-      {:no_tmp, _} = error ->
-        error
+    with {:ok, tmp} <- ensure_tmp() do
+      open(options, tmp, 0, nil)
     end
   end
 
@@ -154,7 +150,7 @@ defmodule Briefly.Entry do
     if tmp = Enum.find_value(tmp_roots, &write_tmp_dir(Path.join(&1, subdir))) do
       {:ok, tmp}
     else
-      {:no_tmp, tmp_roots}
+      {:error, %Briefly.NoRootDirectoryError{tmp_dirs: tmp_roots}}
     end
   end
 
@@ -165,7 +161,7 @@ defmodule Briefly.Entry do
     end
   end
 
-  defp open(%{directory: true} = options, tmp, attempts) when attempts < @max_attempts do
+  defp open(%{directory: true} = options, tmp, attempts, _) when attempts < @max_attempts do
     path = path(options, tmp)
 
     case File.mkdir_p(path) do
@@ -173,18 +169,16 @@ defmodule Briefly.Entry do
         :ets.insert(@path_table, {self(), path})
         {:ok, path}
 
-      {:error, :enospc} ->
-        {:no_space, path}
-
       {:error, reason} when reason in [:eexist, :eacces] ->
-        open(options, tmp, attempts + 1)
+        last_error = %Briefly.WriteError{code: reason, entry_type: :directory, tmp_dir: tmp}
+        open(options, tmp, attempts + 1, last_error)
 
-      error ->
-        error
+      {:error, code} ->
+        {:error, %Briefly.WriteError{code: code, entry_type: :directory, tmp_dir: tmp}}
     end
   end
 
-  defp open(options, tmp, attempts) when attempts < @max_attempts do
+  defp open(options, tmp, attempts, _) when attempts < @max_attempts do
     path = path(options, tmp)
 
     case :file.write_file(path, "", [:write, :raw, :exclusive, :binary]) do
@@ -192,19 +186,17 @@ defmodule Briefly.Entry do
         :ets.insert(@path_table, {self(), path})
         {:ok, path}
 
-      {:error, :enospc} ->
-        {:no_space, path}
-
       {:error, reason} when reason in [:eexist, :eacces] ->
-        open(options, tmp, attempts + 1)
+        last_error = %Briefly.WriteError{code: reason, entry_type: :file, tmp_dir: tmp}
+        open(options, tmp, attempts + 1, last_error)
 
-      error ->
-        error
+      {:error, code} ->
+        {:error, %Briefly.WriteError{code: code, entry_type: :file, tmp_dir: tmp}}
     end
   end
 
-  defp open(_prefix, tmp, attempts) do
-    {:too_many_attempts, tmp, attempts}
+  defp open(_options, _tmp, _attempts, last_error) do
+    {:error, last_error}
   end
 
   defp path(options, tmp) do

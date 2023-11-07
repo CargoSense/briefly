@@ -16,6 +16,14 @@ If you were previously using `:monitor_pid` like this:
 :ok = Briefly.give_away(path, pid)
 ```
 
+### Exceptions
+
+The following exceptions may now be returned from `Briefly.create/1`:
+
+- `%Briefly.NoRootDirectoryError{}` - returned when a root temporary directory could not be accessed.
+
+- `%Briefly.WriteError{}` - returned when an entry cannot be created.
+
 ## v0.4.1 (2023-01-11)
 
 - Fix an issue with custom tmp dirs without a trailing slash ([#24](https://github.com/CargoSense/briefly/pull/24)) @srgpqt

@@ -22,11 +22,7 @@ defmodule Briefly do
   @doc """
   Requests a temporary file to be created with the given options.
   """
-  @spec create(create_opts) ::
-          {:ok, binary}
-          | {:no_space, binary}
-          | {:too_many_attempts, binary, pos_integer}
-          | {:no_tmp, [binary]}
+  @spec create(create_opts) :: {:ok, binary} | {:error, Exception.t()}
   def create(opts \\ []) do
     opts
     |> Enum.into(%{})
@@ -37,17 +33,11 @@ defmodule Briefly do
   Requests a temporary file to be created with the given options
   and raises on failure.
   """
-  @spec create!(create_opts) :: binary | no_return
+  @spec create!(create_opts) :: binary
   def create!(opts \\ []) do
     case create(opts) do
-      {:ok, path} ->
-        path
-
-      {:too_many_attempts, tmp, attempts} ->
-        raise "tried #{attempts} times to create a temporary file at #{tmp} but failed. What gives?"
-
-      {:no_tmp, _tmps} ->
-        raise "could not create a tmp directory to store temporary files. Set the :briefly :directory application setting to a directory with write permission"
+      {:ok, path} -> path
+      {:error, exception} when is_exception(exception) -> raise exception
     end
   end
 
