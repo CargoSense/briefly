@@ -24,7 +24,7 @@ The fastest way to use Briefly is with [`Mix.install/2`](https://hexdocs.pm/mix/
 
 ```elixir
 Mix.install([
-  {:briefly, "~> 0.4.0"}
+  {:briefly, "~> 0.5.0"}
 ])
 
 {:ok, path} = Briefly.create()
