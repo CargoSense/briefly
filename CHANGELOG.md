@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.5.0
+## v0.5.0 (2023-11-15)
 
 This version changes the Briefly API, so read the notes below and upgrade with care.
 
