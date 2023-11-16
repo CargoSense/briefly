@@ -1,4 +1,40 @@
+# Changelog
+
 ## v0.5.0
+
+This version changes the Briefly API, so read the notes below and upgrade with care.
+
+- Change the return value of `Briefly.create/1` to be either `{:ok, path}` or
+  `{:error, Exception.t()}`. The following exceptions may be returned:
+
+  - `%Briefly.NoRootDirectoryError{}` - Briefly is unable to create a root temporary
+    directory. The exception contains the temp dirs attempted.
+
+  - `%Briefly.WriteError{}` - A temporary entry cannot be created. The exception
+    contains the POSIX error code the caused the failure.
+
+For example, if you have this:
+
+```elixir
+case Briefly.create() do
+  {:ok, path} -> path
+  {:no_space, _} -> raise "no space"
+  {:too_many_attempts, _} -> raise "too many attempts"
+  {:no_tmp, _} -> raise "no tmp dirs"
+end
+```
+
+...then change it to this:
+
+```elixir
+case Briefly.create() do
+  {:ok, path} -> path
+  {:error, %Briefly.WriteError{code: :enospc}} -> raise "no space"
+  {:error, %Briefly.WriteError{code: c}} when c in [:eexist, :eacces] -> raise "too many attempts"
+  {:error, %Briefly.NoRootDirectoryError{}} -> raise "no tmp dirs"
+  {:error, exception} when is_exception(exception) -> raise exception
+end
+```
 
 - Add `Briefly.give_away/3` to transfer ownership of a tmp file.
 - Deprecate the `:monitor_pid` option.
@@ -15,14 +51,6 @@ If you were previously using `:monitor_pid` like this:
 {:ok, path} = Briefly.create()
 :ok = Briefly.give_away(path, pid)
 ```
-
-### Exceptions
-
-The following exceptions may now be returned from `Briefly.create/1`:
-
-- `%Briefly.NoRootDirectoryError{}` - returned when a root temporary directory could not be accessed.
-
-- `%Briefly.WriteError{}` - returned when an entry cannot be created.
 
 ## v0.4.1 (2023-01-11)
 

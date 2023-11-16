@@ -35,7 +35,7 @@ defmodule Briefly.Mixfile do
   defp package do
     [
       description: "Simple, robust temporary file support",
-      files: ["lib", "config", "mix.exs", "README*", "LICENSE"],
+      files: ["lib", "config", "mix.exs", "README*", "LICENSE", "CHANGELOG.md"],
       contributors: ["Bruce Williams", "Michael A. Crumm Jr."],
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => @source_url}
@@ -49,7 +49,7 @@ defmodule Briefly.Mixfile do
       language: "en",
       formatters: ["html"],
       main: "usage",
-      extras: ["guides/usage.livemd"]
+      extras: ["guides/usage.livemd", "CHANGELOG.md"]
     ]
   end
 
