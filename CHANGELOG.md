@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.5.1 (2024-01-19)
+
+- Introduces `Briefly.create(type: :device)` to return a raw IO device. https://github.com/CargoSense/briefly/pull/43. `create(directory: true)` is deprecated in favor of `create(type: :directory)`.
+
+
 ## v0.5.0 (2023-11-15)
 
 This version changes the Briefly API, so read the notes below and upgrade with care.
