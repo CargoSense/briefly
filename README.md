@@ -43,7 +43,7 @@ Briefly can also create a temporary directory:
 
 
 ```elixir
-{:ok, dir} = Briefly.create(directory: true)
+{:ok, dir} = Briefly.create(type: :directory)
 File.write!(Path.join(dir, "test.txt"), "Some Text")
 # When this process exits, the directory and file are removed
 ```
@@ -59,6 +59,7 @@ following Mix config:
 # config/config.exs
 config :briefly,
   directory: [{:system, "TMPDIR"}, {:system, "TMP"}, {:system, "TEMP"}, "/tmp"],
+  directory_mode: 0o755,
   default_prefix: "briefly",
   default_extname: ""
 ```

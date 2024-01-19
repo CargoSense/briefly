@@ -28,7 +28,7 @@ When this process exits, the file at `path` is removed.
 Briefly can also create a temporary directory:
 
 ```elixir
-{:ok, dir} = Briefly.create(directory: true)
+{:ok, dir} = Briefly.create(type: :directory)
 ```
 
 You can use [`File.stat/1`](https://hexdocs.pm/elixir/File.html#stat/1) to check the type:

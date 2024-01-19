@@ -16,13 +16,17 @@ defmodule Briefly do
   @type create_opts :: [
           {:prefix, binary},
           {:extname, binary},
+          {:type, :path | :directory | :device},
           {:directory, boolean}
         ]
 
   @doc """
   Requests a temporary file to be created with the given options.
   """
-  @spec create(create_opts) :: {:ok, binary} | {:error, Exception.t()}
+  @spec create(create_opts) ::
+          {:ok, binary}
+          | {:ok, binary, pid}
+          | {:error, Exception.t()}
   def create(opts \\ []) do
     opts
     |> Enum.into(%{})
